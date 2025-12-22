@@ -1,0 +1,19 @@
+Write a professional, concise cover letter using the information below.
+
+Tone:
+- Confident
+- Clear
+- Human
+- Not overly verbose
+
+Job Information:
+{{JOB_TEXT}}
+
+Candidate Resume:
+{{RESUME_TEXT}}
+
+Instructions:
+- Tailor the letter to the role and company
+- Do not repeat the resume verbatim
+- Focus on fit and motivation
+- 3–4 paragraphs max
