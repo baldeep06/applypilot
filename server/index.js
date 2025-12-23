@@ -16,7 +16,7 @@ app.use(express.json({ limit: "10mb" }));
 // Configure multer for file uploads (memory storage)
 const upload = multer({ storage: multer.memoryStorage() });
 
-const TEMPLATE = fs.readFileSync("./templates/default.txt", "utf-8");
+const TEMPLATE = fs.readFileSync("./templates/defaulttemplate.txt", "utf-8");
 
 // require API key
 if (!process.env.GEMINI_API_KEY) {
@@ -109,8 +109,60 @@ app.post("/generate", upload.single("resume"), async (req, res) => {
     }
 
     // Generate PDF from cover letter
+    // Standard US Letter: 8.5" x 11" = 612 x 792 points
+    // 3/4 of page = 594 points
+    const pageHeight = 792;
+    const topMargin = 72;
+    const bottomMargin = 72;
+    const maxHeight = (pageHeight * 0.75) - topMargin; // Maximum height (3/4 page minus top margin)
+    const pageWidth = 612 - 144; // Total width minus left and right margins
+    
+    // Function to measure text height using a temporary document
+    const measureTextHeight = (text, fontSize, lineGap, paragraphGap) => {
+      const buffer = [];
+      const measureDoc = new PDFDocument({
+        margins: { top: topMargin, bottom: bottomMargin, left: 72, right: 72 },
+        size: [612, pageHeight]
+      });
+      measureDoc.on('data', buffer.push.bind(buffer));
+      
+      measureDoc.fontSize(fontSize);
+      const startY = measureDoc.y;
+      measureDoc.text(text, {
+        align: "left",
+        lineGap: lineGap,
+        paragraphGap: paragraphGap,
+        width: pageWidth
+      });
+      const endY = measureDoc.y;
+      measureDoc.end();
+      
+      return endY - startY;
+    };
+    
+    // Find optimal font size and spacing
+    let fontSize = 11;
+    let lineGap = 4;
+    let paragraphGap = 4;
+    let textHeight = measureTextHeight(coverLetter, fontSize, lineGap, paragraphGap);
+    
+    // Adjust if content exceeds 3/4 page
+    while (textHeight > maxHeight && fontSize >= 9) {
+      if (fontSize > 10) {
+        fontSize -= 0.5;
+      } else if (lineGap > 2) {
+        lineGap -= 1;
+        paragraphGap -= 1;
+      } else {
+        fontSize -= 0.5;
+      }
+      textHeight = measureTextHeight(coverLetter, fontSize, lineGap, paragraphGap);
+    }
+    
+    // Create the actual PDF document
     const doc = new PDFDocument({
-      margins: { top: 72, bottom: 72, left: 72, right: 72 }
+      margins: { top: topMargin, bottom: bottomMargin, left: 72, right: 72 },
+      size: [612, pageHeight]
     });
 
     // Set response headers for PDF download
@@ -120,11 +172,13 @@ app.post("/generate", upload.single("resume"), async (req, res) => {
     // Pipe PDF to response
     doc.pipe(res);
 
-    // Add cover letter text to PDF with proper formatting
-    doc.fontSize(11);
+    // Add cover letter text to PDF with calculated formatting
+    doc.fontSize(fontSize);
     doc.text(coverLetter, {
       align: "left",
-      paragraphGap: 5
+      lineGap: lineGap,
+      paragraphGap: paragraphGap,
+      width: pageWidth
     });
 
     doc.end();

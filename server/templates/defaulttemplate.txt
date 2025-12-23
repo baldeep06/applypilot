@@ -1,0 +1,44 @@
+NOTE: Keep this cover letter to ¾ of a page. 
+
+Job Posting:
+{{JOB_TEXT}}
+
+Candidate Resume:
+{{RESUME_TEXT}}
+
+ HEADER:
+{today_date}
+{full_name}
+{phone_number}
+{email_address}
+GREETING:
+Dear {hiring_manager},
+(If no hiring manager is provided, use "Hiring Manager")
+OPENING PARAGRAPH:
+I am writing to express my interest in the {role} intern position at {company/organization}. As a passionate and driven individual studying {field of study} at {university}, I am excited about the opportunity to contribute to your innovative team and gain valuable experience in the field.
+SECOND PARAGRAPH:
+{second_paragraph}
+Write a paragraph that:
+
+Identifies a specific element from the job posting (mission statement, company values, required technologies, or key initiatives)
+Connects this element to the applicant's relevant experiences, projects, or technical skills from their resume
+Focuses on impact, learning, problem-solving, or collaboration
+Includes specific technologies and technical details when contextually relevant
+Does NOT simply restate resume bullets
+Only mentions experiences and skills that are BOTH on the resume AND relevant to the job posting
+
+THIRD PARAGRAPH:
+{third_paragraph}
+Write a paragraph that:
+
+Discusses different aspects of the company that interest the applicant (distinct from topics covered in paragraph 2)
+Focuses on company values, technologies, tech stack similarities, or innovations
+Connects these interests to the applicant's skills, experiences, or projects not yet mentioned
+Emphasizes soft skills, particularly communication abilities
+Maintains uniqueness from the second paragraph
+
+CLOSING PARAGRAPH:
+I am confident that my {relevant skill 1}, {relevant skill 2}, and strong work ethic would make me a valuable asset to {company}. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application.
+Sincerely,
+{full_name}
+
