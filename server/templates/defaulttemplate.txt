@@ -1,44 +1,105 @@
-NOTE: Keep this cover letter to ¾ of a page. 
+SYSTEM INSTRUCTION: You are generating a cover letter. STRICT COMPLIANCE with all rules below is MANDATORY.
+
+===== ABSOLUTE RULES - VIOLATION WILL RESULT IN REJECTION =====
+
+RULE 1: TOTAL LENGTH = 250-300 WORDS MAXIMUM (¾ page)
+RULE 2: SECOND PARAGRAPH = 90-105 WORDS MAXIMUM
+RULE 3: THIRD PARAGRAPH = 90-105 WORDS MAXIMUM
+RULE 4: NEVER COPY RESUME TEXT - All content must be SYNTHESIZED and REWRITTEN
+RULE 5: DO NOT mention specific numbers, metrics, or technical implementations from resume
+RULE 6: Focus on THEMES and CAPABILITIES, not specific projects
+RULE 7: Use simple, concise language - avoid overly verbose or flowery writing
+
+===== FORBIDDEN ACTIONS =====
+❌ NEVER write sentences like: "I engineered/developed/built [specific thing from resume]"
+❌ NEVER mention specific technologies in combination with specific projects
+❌ NEVER include metrics or numbers from resume (no "20%", "30 pages", "$10,000", etc.)
+❌ NEVER describe what you built - instead describe what skills you gained
+❌ NEVER use phrases that appear verbatim in the resume
+❌ NEVER use overly complex or verbose language
+❌ NEVER add extra blank lines - use ONLY single line breaks between sections
+
+===== REQUIRED APPROACH =====
+✅ Discuss broad technical competencies (e.g., "full-stack development experience")
+✅ Reference general skill areas (e.g., "database optimization" not "improved query runtimes by 50%")
+✅ Connect skills to company needs WITHOUT describing specific past projects
+✅ Use original phrasing - pretend you've never seen the resume text
+✅ Keep sentences short and direct
+✅ Be conversational, not formal or stiff
+
+===== INPUT DATA =====
 
 Job Posting:
 {{JOB_TEXT}}
 
-Candidate Resume:
+Resume (FOR REFERENCE ONLY - DO NOT COPY):
 {{RESUME_TEXT}}
 
- HEADER:
-{today_date}
-{full_name}
-{phone_number}
-{email_address}
-GREETING:
-Dear {hiring_manager},
-(If no hiring manager is provided, use "Hiring Manager")
-OPENING PARAGRAPH:
-I am writing to express my interest in the {role} intern position at {company/organization}. As a passionate and driven individual studying {field of study} at {university}, I am excited about the opportunity to contribute to your innovative team and gain valuable experience in the field.
-SECOND PARAGRAPH:
-{second_paragraph}
-Write a paragraph that:
+===== EXACT OUTPUT FORMAT =====
 
-Identifies a specific element from the job posting (mission statement, company values, required technologies, or key initiatives)
-Connects this element to the applicant's relevant experiences, projects, or technical skills from their resume
-Focuses on impact, learning, problem-solving, or collaboration
-Includes specific technologies and technical details when contextually relevant
-Does NOT simply restate resume bullets
-Only mentions experiences and skills that are BOTH on the resume AND relevant to the job posting
+Output the cover letter with this EXACT spacing pattern (where each line of text is followed by a single line break, creating one blank line between sections):
 
-THIRD PARAGRAPH:
-{third_paragraph}
-Write a paragraph that:
+{{TODAY_DATE}}
 
-Discusses different aspects of the company that interest the applicant (distinct from topics covered in paragraph 2)
-Focuses on company values, technologies, tech stack similarities, or innovations
-Connects these interests to the applicant's skills, experiences, or projects not yet mentioned
-Emphasizes soft skills, particularly communication abilities
-Maintains uniqueness from the second paragraph
+[Full name from resume]
+[Phone from resume]
+[Email from resume]
 
-CLOSING PARAGRAPH:
-I am confident that my {relevant skill 1}, {relevant skill 2}, and strong work ethic would make me a valuable asset to {company}. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application.
+Dear [Hiring manager name OR "Hiring Manager"],
+
+I am writing to express my interest in the [role title] position at [company name]. As a [field of study] student at [university], I am excited about the opportunity to contribute to your team and gain valuable experience in the field.
+
+[PARAGRAPH 2 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
+Write a concise paragraph that:
+- Identifies ONE element from the job posting (technology, value, or initiative)
+- References your GENERAL technical capabilities
+- Does NOT describe specific projects or include metrics
+- Stays under 105 words
+
+Example: "I'm drawn to [Company]'s focus on scalable systems. Through my academic and professional experiences, I've developed strong skills in full-stack development and building user-centric applications. I enjoy solving complex technical problems and am eager to contribute to [specific company product/technology]."
+
+[PARAGRAPH 3 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
+Write a concise paragraph that:
+- Discusses DIFFERENT company aspects than paragraph 2
+- References DIFFERENT skills (focus on soft skills)
+- Does NOT describe specific projects or include metrics
+- Stays under 105 words
+
+Example: "I'm also impressed by [Company]'s collaborative culture. I've consistently sought opportunities to work with diverse teams and contribute to products that make a real impact. I thrive in environments that encourage learning and innovation."
+
+I am confident that my [2-3 general skills that match job] and strong work ethic would make me a valuable asset to [company]. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application.
+
 Sincerely,
-{full_name}
+[Full name]
 
+===== SPACING INSTRUCTIONS =====
+Output format with NO extra blank lines:
+Line 1: Date
+Line 2: (blank)
+Line 3: Name
+Line 4: Phone
+Line 5: Email
+Line 6: (blank)
+Line 7: Dear...
+Line 8: (blank)
+Line 9-11: Opening paragraph
+Line 12: (blank)
+Line 13-17: Second paragraph
+Line 18: (blank)
+Line 19-23: Third paragraph
+Line 24: (blank)
+Line 25-27: Closing paragraph
+Line 28: (blank)
+Line 29: Sincerely,
+Line 30: Name
+
+===== FINAL CHECKPOINT =====
+Before outputting, COUNT and verify:
+□ Paragraph 2 is 90-105 words (COUNT THEM)
+□ Paragraph 3 is 90-105 words (COUNT THEM)
+□ Total is 250-300 words
+□ NO sentences copied from resume
+□ NO metrics from resume
+□ NO project descriptions
+□ Exactly ONE blank line between sections
+□ Simple, concise language

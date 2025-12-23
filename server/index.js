@@ -62,12 +62,21 @@ app.post("/generate", upload.single("resume"), async (req, res) => {
       return res.status(400).json({ error: "Failed to parse PDF: " + err.message });
     }
 
+    // Get today's date in professional format
+    const today = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+
     // Generate cover letter using template
     const prompt = TEMPLATE
+      .replace("{{TODAY_DATE}}", today)
       .replace("{{JOB_TEXT}}", jobText)
       .replace("{{RESUME_TEXT}}", resumeText);
 
     console.log("📝 Prompt length:", prompt.length);
+    console.log("📅 Today's date:", today);
     console.log("📄 Resume text length:", resumeText.length);
 
     // call Gemini via SDK
@@ -110,58 +119,16 @@ app.post("/generate", upload.single("resume"), async (req, res) => {
 
     // Generate PDF from cover letter
     // Standard US Letter: 8.5" x 11" = 612 x 792 points
-    // 3/4 of page = 594 points
     const pageHeight = 792;
     const topMargin = 72;
     const bottomMargin = 72;
-    const maxHeight = (pageHeight * 0.75) - topMargin; // Maximum height (3/4 page minus top margin)
-    const pageWidth = 612 - 144; // Total width minus left and right margins
+    const leftMargin = 72;
+    const rightMargin = 72;
+    const pageWidth = 612 - leftMargin - rightMargin;
     
-    // Function to measure text height using a temporary document
-    const measureTextHeight = (text, fontSize, lineGap, paragraphGap) => {
-      const buffer = [];
-      const measureDoc = new PDFDocument({
-        margins: { top: topMargin, bottom: bottomMargin, left: 72, right: 72 },
-        size: [612, pageHeight]
-      });
-      measureDoc.on('data', buffer.push.bind(buffer));
-      
-      measureDoc.fontSize(fontSize);
-      const startY = measureDoc.y;
-      measureDoc.text(text, {
-        align: "left",
-        lineGap: lineGap,
-        paragraphGap: paragraphGap,
-        width: pageWidth
-      });
-      const endY = measureDoc.y;
-      measureDoc.end();
-      
-      return endY - startY;
-    };
-    
-    // Find optimal font size and spacing
-    let fontSize = 11;
-    let lineGap = 4;
-    let paragraphGap = 4;
-    let textHeight = measureTextHeight(coverLetter, fontSize, lineGap, paragraphGap);
-    
-    // Adjust if content exceeds 3/4 page
-    while (textHeight > maxHeight && fontSize >= 9) {
-      if (fontSize > 10) {
-        fontSize -= 0.5;
-      } else if (lineGap > 2) {
-        lineGap -= 1;
-        paragraphGap -= 1;
-      } else {
-        fontSize -= 0.5;
-      }
-      textHeight = measureTextHeight(coverLetter, fontSize, lineGap, paragraphGap);
-    }
-    
-    // Create the actual PDF document
+    // Create the PDF document with Times New Roman
     const doc = new PDFDocument({
-      margins: { top: topMargin, bottom: bottomMargin, left: 72, right: 72 },
+      margins: { top: topMargin, bottom: bottomMargin, left: leftMargin, right: rightMargin },
       size: [612, pageHeight]
     });
 
@@ -172,12 +139,15 @@ app.post("/generate", upload.single("resume"), async (req, res) => {
     // Pipe PDF to response
     doc.pipe(res);
 
-    // Add cover letter text to PDF with calculated formatting
-    doc.fontSize(fontSize);
+    // Set font to Times New Roman and size to 11
+    doc.font('Times-Roman');
+    doc.fontSize(11);
+    
+    // Add cover letter text to PDF with minimal spacing
     doc.text(coverLetter, {
       align: "left",
-      lineGap: lineGap,
-      paragraphGap: paragraphGap,
+      lineGap: 0,
+      paragraphGap: 0,
       width: pageWidth
     });
 
