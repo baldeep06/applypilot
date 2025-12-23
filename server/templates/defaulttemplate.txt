@@ -5,34 +5,29 @@ SYSTEM INSTRUCTION: You are generating a cover letter. STRICT COMPLIANCE with al
 RULE 1: TOTAL LENGTH = 250-300 WORDS MAXIMUM (¾ page)
 RULE 2: SECOND PARAGRAPH = 90-105 WORDS MAXIMUM
 RULE 3: THIRD PARAGRAPH = 90-105 WORDS MAXIMUM
-RULE 4: NEVER COPY RESUME TEXT - All content must be SYNTHESIZED and REWRITTEN
-RULE 5: DO NOT mention specific numbers, metrics, or technical implementations from resume
-RULE 6: Focus on THEMES and CAPABILITIES, not specific projects
-RULE 7: Use simple, concise language - avoid overly verbose or flowery writing
+RULE 4: Use simple, concise language - avoid overly verbose or flowery writing
+RULE 5: NEVER use em dashes (—) anywhere in the letter
+RULE 6: Simplify role names to their logical form (e.g., "Summer Technology/Developer" becomes "Summer Developer")
 
 ===== FORBIDDEN ACTIONS =====
-❌ NEVER write sentences like: "I engineered/developed/built [specific thing from resume]"
-❌ NEVER mention specific technologies in combination with specific projects
-❌ NEVER include metrics or numbers from resume (no "20%", "30 pages", "$10,000", etc.)
-❌ NEVER describe what you built - instead describe what skills you gained
-❌ NEVER use phrases that appear verbatim in the resume
 ❌ NEVER use overly complex or verbose language
 ❌ NEVER add extra blank lines - use ONLY single line breaks between sections
+❌ NEVER use em dashes (—) - use commas or periods instead
+❌ NEVER copy exact sentences from the resume word-for-word
+❌ NEVER use the full verbose role title - simplify it logically
 
 ===== REQUIRED APPROACH =====
-✅ Discuss broad technical competencies (e.g., "full-stack development experience")
-✅ Reference general skill areas (e.g., "database optimization" not "improved query runtimes by 50%")
-✅ Connect skills to company needs WITHOUT describing specific past projects
-✅ Use original phrasing - pretend you've never seen the resume text
 ✅ Keep sentences short and direct
 ✅ Be conversational, not formal or stiff
+✅ Use commas or periods instead of em dashes
+✅ Simplify role titles to their essential meaning
 
 ===== INPUT DATA =====
 
 Job Posting:
 {{JOB_TEXT}}
 
-Resume (FOR REFERENCE ONLY - DO NOT COPY):
+Resume (FOR REFERENCE ONLY - USE FOR INSPIRATION):
 {{RESUME_TEXT}}
 
 ===== EXACT OUTPUT FORMAT =====
@@ -47,25 +42,33 @@ Output the cover letter with this EXACT spacing pattern (where each line of text
 
 Dear [Hiring manager name OR "Hiring Manager"],
 
-I am writing to express my interest in the [role title] position at [company name]. As a [field of study] student at [university], I am excited about the opportunity to contribute to your team and gain valuable experience in the field.
+I am writing to express my interest in the [simplified role title - make it logical and concise] position at [company name]. As a [field of study] student at [university], I am excited about the opportunity to contribute to your team and gain valuable experience in the field.
 
 [PARAGRAPH 2 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
-Write a concise paragraph that:
-- Identifies ONE element from the job posting (technology, value, or initiative)
-- References your GENERAL technical capabilities
-- Does NOT describe specific projects or include metrics
-- Stays under 105 words
+FOCUS: Specific technologies and technical experience
 
-Example: "I'm drawn to [Company]'s focus on scalable systems. Through my academic and professional experiences, I've developed strong skills in full-stack development and building user-centric applications. I enjoy solving complex technical problems and am eager to contribute to [specific company product/technology]."
+Instructions:
+- Identify specific technologies mentioned in BOTH the job posting AND the resume
+- Discuss how you have used these technologies in previous roles or projects (you may reference specific companies/projects from resume as context)
+- Connect these technical experiences to the job requirements
+- Explain why this background makes you a good fit for the role
+- Stay factual and specific about technologies used
+- Keep under 105 words
+
+Example: "I'm excited about the opportunity to work with React and Node.js at [Company]. In my previous role at [Company from resume], I gained hands-on experience building web applications using these technologies. I worked with REST APIs and SQL databases to create user-facing features. This experience has prepared me well for the full-stack development work described in your posting, and I'm eager to apply these skills to [specific company product/initiative]."
 
 [PARAGRAPH 3 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
-Write a concise paragraph that:
-- Discusses DIFFERENT company aspects than paragraph 2
-- References DIFFERENT skills (focus on soft skills)
-- Does NOT describe specific projects or include metrics
-- Stays under 105 words
+FOCUS: Company context, recent news/events, and soft skills
 
-Example: "I'm also impressed by [Company]'s collaborative culture. I've consistently sought opportunities to work with diverse teams and contribute to products that make a real impact. I thrive in environments that encourage learning and innovation."
+Instructions:
+- Mention what the company is doing (their mission, products, or initiatives)
+- If you know of recent company news, events, or developments, mention them naturally
+- Connect this to relevant soft skills (teamwork, communication, problem-solving, adaptability)
+- Explain how you possess the soft skills required for the job
+- Show genuine interest in the company's work
+- Keep under 105 words
+
+Example: "I'm impressed by [Company]'s recent expansion into cloud infrastructure and your commitment to sustainable technology. I've followed your launch of [recent product/initiative] and admire the team-oriented approach you bring to complex projects. Throughout my experiences, I've developed strong collaboration and communication skills, working effectively with cross-functional teams to deliver results. I thrive in dynamic environments that value innovation and continuous learning, which aligns well with [Company]'s culture."
 
 I am confident that my [2-3 general skills that match job] and strong work ethic would make me a valuable asset to [company]. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application.
 
@@ -84,9 +87,9 @@ Line 7: Dear...
 Line 8: (blank)
 Line 9-11: Opening paragraph
 Line 12: (blank)
-Line 13-17: Second paragraph
+Line 13-17: Second paragraph (TECHNICAL FOCUS)
 Line 18: (blank)
-Line 19-23: Third paragraph
+Line 19-23: Third paragraph (COMPANY + SOFT SKILLS FOCUS)
 Line 24: (blank)
 Line 25-27: Closing paragraph
 Line 28: (blank)
@@ -95,11 +98,10 @@ Line 30: Name
 
 ===== FINAL CHECKPOINT =====
 Before outputting, COUNT and verify:
-□ Paragraph 2 is 90-105 words (COUNT THEM)
-□ Paragraph 3 is 90-105 words (COUNT THEM)
+□ Paragraph 2 is 90-105 words (COUNT THEM) - mentions specific shared technologies
+□ Paragraph 3 is 90-105 words (COUNT THEM) - mentions company context and soft skills
 □ Total is 250-300 words
-□ NO sentences copied from resume
-□ NO metrics from resume
-□ NO project descriptions
+□ Role title is simplified logically
+□ NO em dashes (—) used anywhere
 □ Exactly ONE blank line between sections
 □ Simple, concise language
