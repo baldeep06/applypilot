@@ -1,4 +1,4 @@
-Write a professional, concise cover letter using the information below.
+Write a complete, professional cover letter using the information below. Write the ENTIRE cover letter including the header with sender information, date, recipient address, salutation, body paragraphs, and closing. Do NOT use placeholders like [Your Name] or [Your Address] - write the complete letter with actual content.
 
 Tone:
 - Confident
@@ -13,7 +13,14 @@ Candidate Resume:
 {{RESUME_TEXT}}
 
 Instructions:
+- Write a complete cover letter from start to finish
+- Include header with name, address, phone, email at the top
+- Include date
+- Include recipient address (use the company name from job information)
+- Include proper salutation
 - Tailor the letter to the role and company
 - Do not repeat the resume verbatim
 - Focus on fit and motivation
-- 3–4 paragraphs max
+- 3–4 body paragraphs max
+- Include proper closing (Sincerely, [Name])
+- Do NOT use placeholders - write actual content

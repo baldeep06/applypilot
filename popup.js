@@ -58,61 +58,55 @@ generateBtn.addEventListener("click", async () => {
           return;
         }
 
-        // 3. Load resume from storage
-        const stored = await chrome.storage.local.get("resumeFileDataUrl");
-        if (!stored.resumeFileDataUrl) {
+        // 3. Get resume file from input
+        const resumeFile = resumeInput.files?.[0];
+        if (!resumeFile) {
           setStatus("❌ Please upload a resume first.");
           return;
         }
 
         setStatus("Generating cover letter...");
 
-        // 4. Send to backend
+        // 4. Send PDF file and job text to backend
+        const formData = new FormData();
+        formData.append("resume", resumeFile);
+        formData.append("jobText", jobText);
+
         let response;
-try {
-  response = await fetchWithTimeout(
-    "http://localhost:3000/generate",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jobText,
-        resumeText: `
-Software engineering student with experience in JavaScript, React, Node.js,
-API development, and customer-facing roles.
-`
-      })
-    },
-    15000
-  );
-} catch (err) {
-  console.error("❌ Fetch error:", err);
-  setStatus("❌ Request failed: " + err.message);
-  return;
-}
+        try {
+          response = await fetchWithTimeout(
+            "http://localhost:3000/generate",
+            {
+              method: "POST",
+              body: formData
+            },
+            30000 // Increased timeout for PDF processing
+          );
+        } catch (err) {
+          console.error("❌ Fetch error:", err);
+          setStatus("❌ Request failed: " + err.message);
+          return;
+        }
 
-if (!response.ok) {
-  const errText = await response.text();
-  console.error("❌ Backend returned error:", errText);
-  setStatus("❌ Backend error:\n" + errText);
-  return;
-}
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error("❌ Backend returned error:", errText);
+          setStatus("❌ Backend error:\n" + errText);
+          return;
+        }
 
-let data;
-try {
-  data = await response.json();
-} catch (err) {
-  console.error("❌ JSON parse error:", err);
-  setStatus("❌ Invalid JSON from server");
-  return;
-}
+        // 5. Handle PDF response and trigger download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "cover-letter.pdf";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
 
-if (!data.coverLetter) {
-  setStatus("❌ No cover letter returned");
-  return;
-}
-
-setStatus("✅ Cover letter generated:\n\n" + data.coverLetter);
+        setStatus("✅ Cover letter PDF generated and downloaded!");
 
       }
     );
