@@ -24,15 +24,44 @@
         width: 100%;
         margin-top: 8px;
       }
+      .user-info {
+        background: #f0f0f0;
+        padding: 8px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        font-size: 12px;
+      }
+      .signed-out {
+        display: none;
+      }
+      .signed-in {
+        display: none;
+      }
     </style>
   </head>
   <body>
     <h3>Cover Letter Generator</h3>
 
-    <label>Resume (for now just store the file):</label>
-    <input type="file" id="resumeInput" accept=".pdf" />
+    <!-- Signed Out View -->
+    <div id="signedOutView" class="signed-out">
+      <p>Sign in to save your resume and generate cover letters</p>
+      <button id="signInBtn">Sign In with Google</button>
+    </div>
 
-    <button id="generateBtn">Generate</button>
+    <!-- Signed In View -->
+    <div id="signedInView" class="signed-in">
+      <div class="user-info">
+        <div>Signed in as:</div>
+        <div id="userEmail" style="font-weight: bold;"></div>
+      </div>
+
+      <label>Resume:</label>
+      <div id="resumeStatus" style="margin-top: 5px; font-size: 12px;"></div>
+      <input type="file" id="resumeInput" accept=".pdf" />
+
+      <button id="generateBtn">Generate Cover Letter</button>
+      <button id="signOutBtn" style="background: #ddd; color: #333;">Sign Out</button>
+    </div>
 
     <div id="status"></div>
 

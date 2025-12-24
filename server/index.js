@@ -6,6 +6,7 @@ import multer from "multer";
 import pdfParse from "pdf-parse";
 import PDFDocument from "pdfkit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
@@ -13,18 +14,39 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// Configure multer for file uploads (memory storage)
-const upload = multer({ storage: multer.memoryStorage() });
+// Initialize Supabase with service role key for server-side operations
+// Service role key bypasses RLS policies
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
+const upload = multer({ storage: multer.memoryStorage() });
 const TEMPLATE = fs.readFileSync("./templates/defaulttemplate.txt", "utf-8");
 
-// require API key
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ GEMINI_API_KEY missing in .env");
   process.exit(1);
 }
 
-// init client + model
+if (!process.env.SUPABASE_URL) {
+  console.error("❌ SUPABASE_URL missing in .env");
+  process.exit(1);
+}
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY) {
+  console.error("❌ SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY missing in .env");
+  console.error("   For server-side operations, SUPABASE_SERVICE_ROLE_KEY is recommended");
+  console.error("   (it bypasses RLS policies)");
+  process.exit(1);
+}
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -34,121 +56,203 @@ const model = genAI.getGenerativeModel({
   }
 });
 
-app.post("/generate", upload.single("resume"), async (req, res) => {
+// Middleware to verify Google token
+async function verifyToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const userInfo = await response.json();
+    req.userEmail = userInfo.email;
+
+    // Ensure user exists in database
+    const { error } = await supabase
+      .from('users')
+      .upsert({ email: userInfo.email }, { onConflict: 'email' });
+
+    if (error) console.error("Error upserting user:", error);
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+}
+
+// Upload resume endpoint
+app.post("/upload-resume", verifyToken, upload.single("resume"), async (req, res) => {
+  try {
+    const resumeFile = req.file;
+    if (!resumeFile) {
+      return res.status(400).json({ error: "No resume file provided" });
+    }
+
+    const storagePath = `${req.userEmail}/resume.pdf`;
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('resumes')
+      .upload(storagePath, resumeFile.buffer, {
+        contentType: 'application/pdf',
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error("Storage upload error:", uploadError);
+      return res.status(500).json({ 
+        error: `Failed to upload resume to storage: ${uploadError.message || uploadError}` 
+      });
+    }
+
+    // Save metadata to database
+    const { error: dbError } = await supabase
+      .from('resumes')
+      .upsert({
+        user_email: req.userEmail,
+        filename: resumeFile.originalname,
+        storage_path: storagePath,
+        file_size: resumeFile.size,
+        uploaded_at: new Date().toISOString()
+      }, { onConflict: 'user_email' });
+
+    if (dbError) {
+      console.error("Database error:", dbError);
+      return res.status(500).json({ 
+        error: `Failed to save resume metadata: ${dbError.message || dbError}` 
+      });
+    }
+
+    console.log(`✅ Resume saved for ${req.userEmail}`);
+    res.json({ success: true, filename: resumeFile.originalname });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+// Check resume status
+app.get("/resume-status", verifyToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('resumes')
+      .select('filename, uploaded_at')
+      .eq('user_email', req.userEmail)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error("Database error:", error);
+      return res.status(500).json({ error: "Failed to check resume status" });
+    }
+
+    res.json({
+      hasResume: !!data,
+      filename: data?.filename || null,
+      uploadedAt: data?.uploaded_at || null
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+// Generate cover letter
+app.post("/generate", verifyToken, async (req, res) => {
   try {
     const { jobText } = req.body;
-    const resumeFile = req.file;
 
     if (!jobText) {
       return res.status(400).json({ error: "Missing jobText" });
     }
 
-    if (!resumeFile) {
-      return res.status(400).json({ error: "Missing resume file" });
+    // Get resume metadata
+    const { data: resumeData, error: resumeError } = await supabase
+      .from('resumes')
+      .select('storage_path')
+      .eq('user_email', req.userEmail)
+      .single();
+
+    if (resumeError || !resumeData) {
+      return res.status(400).json({ error: "No resume saved. Please upload a resume first." });
     }
+
+    // Download resume from storage
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from('resumes')
+      .download(resumeData.storage_path);
+
+    if (downloadError) {
+      console.error("Storage download error:", downloadError);
+      return res.status(500).json({ error: "Failed to retrieve resume" });
+    }
+
+    // Convert blob to buffer
+    const buffer = Buffer.from(await fileData.arrayBuffer());
 
     // Extract text from PDF
     let resumeText;
     try {
-      const pdfData = await pdfParse(resumeFile.buffer);
+      const pdfData = await pdfParse(buffer);
       resumeText = pdfData.text;
       if (!resumeText || resumeText.trim().length === 0) {
-        return res.status(400).json({ error: "Could not extract text from PDF" });
+        return res.status(400).json({ error: "Could not extract text from resume" });
       }
-      console.log("📄 Extracted resume text length:", resumeText.length);
-      console.log("📄 First 300 chars of resume:", resumeText.substring(0, 300));
     } catch (err) {
       console.error("PDF parsing error:", err);
-      return res.status(400).json({ error: "Failed to parse PDF: " + err.message });
+      return res.status(400).json({ error: "Failed to parse resume: " + err.message });
     }
 
-    // Get today's date in professional format
     const today = new Date().toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     });
 
-    // Generate cover letter using template
     const prompt = TEMPLATE
       .replace("{{TODAY_DATE}}", today)
       .replace("{{JOB_TEXT}}", jobText)
       .replace("{{RESUME_TEXT}}", resumeText);
 
-    console.log("📝 Prompt length:", prompt.length);
-    console.log("📅 Today's date:", today);
-    console.log("📄 Resume text length:", resumeText.length);
+    console.log(`📝 Generating cover letter for ${req.userEmail}`);
 
-    // call Gemini via SDK
     const result = await model.generateContent(prompt);
     const response = result.response;
-    
-    // Check if response was truncated
-    const finishReason = response.candidates?.[0]?.finishReason;
-    console.log("🔍 Response details:", {
-      finishReason,
-      candidates: response.candidates?.length,
-      candidate0: response.candidates?.[0]
-    });
-    
-    if (finishReason === "MAX_TOKENS") {
-      console.warn("⚠️ Response was truncated due to MAX_TOKENS limit - consider increasing maxOutputTokens");
-    }
-    
-    // Extract text - try multiple methods
     let coverLetter = "";
+    
     try {
       coverLetter = response.text();
     } catch (err) {
-      console.error("Error extracting text with .text():", err);
-      // Fallback: try to get text from candidates
       if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
         coverLetter = response.candidates[0].content.parts[0].text;
       }
     }
 
-    console.log("✅ Cover letter generated, length:", coverLetter.length);
-    console.log("📋 Finish reason:", finishReason);
-    console.log("📋 Full cover letter:", coverLetter);
-    console.log("📋 Last 200 chars:", coverLetter.substring(Math.max(0, coverLetter.length - 200)));
-
     if (!coverLetter || coverLetter.trim().length === 0) {
-      console.error("❌ No text returned from model:", JSON.stringify(result));
-      return res.status(500).json({ error: "No text returned from Gemini", raw: result });
+      return res.status(500).json({ error: "No text returned from Gemini" });
     }
 
-    // Generate PDF from cover letter
-    // Standard US Letter: 8.5" x 11" = 612 x 792 points
-    const pageHeight = 792;
-    const topMargin = 72;
-    const bottomMargin = 72;
-    const leftMargin = 72;
-    const rightMargin = 72;
-    const pageWidth = 612 - leftMargin - rightMargin;
-    
-    // Create the PDF document with Times New Roman
+    // Generate PDF
     const doc = new PDFDocument({
-      margins: { top: topMargin, bottom: bottomMargin, left: leftMargin, right: rightMargin },
-      size: [612, pageHeight]
+      margins: { top: 72, bottom: 72, left: 72, right: 72 },
+      size: [612, 792]
     });
 
-    // Set response headers for PDF download
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=cover-letter.pdf");
 
-    // Pipe PDF to response
     doc.pipe(res);
-
-    // Set font to Times New Roman and size to 11
     doc.font('Times-Roman');
     doc.fontSize(11);
-    
-    // Add cover letter text to PDF with minimal spacing
     doc.text(coverLetter, {
       align: "left",
       lineGap: 0,
       paragraphGap: 0,
-      width: pageWidth
+      width: 612 - 144
     });
 
     doc.end();

@@ -1,40 +1,147 @@
+const signInBtn = document.getElementById("signInBtn");
+const signOutBtn = document.getElementById("signOutBtn");
 const generateBtn = document.getElementById("generateBtn");
 const statusEl = document.getElementById("status");
 const resumeInput = document.getElementById("resumeInput");
+const userEmailEl = document.getElementById("userEmail");
+const resumeStatusEl = document.getElementById("resumeStatus");
+const signedOutView = document.getElementById("signedOutView");
+const signedInView = document.getElementById("signedInView");
+
+const API_URL = "http://localhost:3000";
+
+let currentUser = null;
 
 function setStatus(msg) {
   statusEl.textContent = msg;
 }
 
-function fetchWithTimeout(url, options, timeoutMs = 15000) {
-  return Promise.race([
-    fetch(url, options),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Request timed out")), timeoutMs)
-    )
-  ]);
+function updateUI() {
+  if (currentUser) {
+    signedOutView.style.display = "none";
+    signedInView.style.display = "block";
+    userEmailEl.textContent = currentUser.email;
+    checkResumeStatus();
+  } else {
+    signedOutView.style.display = "block";
+    signedInView.style.display = "none";
+  }
 }
 
+async function checkResumeStatus() {
+  try {
+    const response = await fetch(`${API_URL}/resume-status`, {
+      headers: {
+        'Authorization': `Bearer ${currentUser.token}`
+      }
+    });
+    const data = await response.json();
+    if (data.hasResume) {
+      resumeStatusEl.textContent = `✅ Resume saved (${data.filename})`;
+      resumeStatusEl.style.color = "green";
+    } else {
+      resumeStatusEl.textContent = "⚠️ No resume saved - upload one below";
+      resumeStatusEl.style.color = "orange";
+    }
+  } catch (err) {
+    console.error("Error checking resume status:", err);
+  }
+}
 
-// Save resume file (base64 for now)
-resumeInput.addEventListener("change", () => {
+// Sign in with Google
+signInBtn.addEventListener("click", () => {
+  chrome.identity.getAuthToken({ interactive: true }, async (token) => {
+    if (chrome.runtime.lastError) {
+      const errorMsg = chrome.runtime.lastError.message || "Unknown error";
+      console.error("Auth error:", errorMsg);
+      setStatus(`❌ Sign in failed: ${errorMsg}`);
+      return;
+    }
+    if (!token) {
+      setStatus("❌ Sign in failed: No token received");
+      return;
+    }
+
+    // Get user info from Google
+    const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const userInfo = await response.json();
+
+    currentUser = {
+      email: userInfo.email,
+      token: token
+    };
+
+    // Save to chrome storage
+    chrome.storage.local.set({ user: currentUser });
+    updateUI();
+    setStatus("✅ Signed in successfully!");
+  });
+});
+
+// Sign out
+signOutBtn.addEventListener("click", () => {
+  chrome.identity.getAuthToken({ interactive: false }, (token) => {
+    if (token) {
+      chrome.identity.removeCachedAuthToken({ token }, () => {
+        chrome.storage.local.remove("user");
+        currentUser = null;
+        updateUI();
+        setStatus("Signed out");
+      });
+    }
+  });
+});
+
+// Upload resume
+resumeInput.addEventListener("change", async () => {
   const file = resumeInput.files?.[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    chrome.storage.local.set({ resumeFileDataUrl: reader.result }, () => {
-      setStatus("✅ Resume saved.");
+  const formData = new FormData();
+  formData.append("resume", file);
+
+  try {
+    setStatus("Uploading resume...");
+    const response = await fetch(`${API_URL}/upload-resume`, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${currentUser.token}`
+      },
+      body: formData
     });
-  };
-  reader.readAsDataURL(file);
+
+    if (response.ok) {
+      const data = await response.json();
+      setStatus("✅ Resume uploaded and saved!");
+      checkResumeStatus();
+    } else {
+      let errorMsg = "Failed to upload resume";
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.error || errorMsg;
+      } catch (parseErr) {
+        errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      console.error("Upload error:", errorMsg, response.status);
+      setStatus(`❌ ${errorMsg}`);
+    }
+  } catch (err) {
+    console.error("Upload error:", err);
+    if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
+      setStatus(`❌ Cannot connect to server. Is it running on ${API_URL}?`);
+    } else {
+      setStatus(`❌ Error: ${err.message}`);
+    }
+  }
 });
 
+// Generate cover letter
 generateBtn.addEventListener("click", async () => {
   try {
     setStatus("Reading job page...");
 
-    // 1. Get active tab
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true
@@ -45,7 +152,6 @@ generateBtn.addEventListener("click", async () => {
       return;
     }
 
-    // 2. Extract page text
     chrome.scripting.executeScript(
       {
         target: { tabId: tab.id },
@@ -58,44 +164,23 @@ generateBtn.addEventListener("click", async () => {
           return;
         }
 
-        // 3. Get resume file from input
-        const resumeFile = resumeInput.files?.[0];
-        if (!resumeFile) {
-          setStatus("❌ Please upload a resume first.");
-          return;
-        }
-
         setStatus("Generating cover letter...");
 
-        // 4. Send PDF file and job text to backend
-        const formData = new FormData();
-        formData.append("resume", resumeFile);
-        formData.append("jobText", jobText);
-
-        let response;
-        try {
-          response = await fetchWithTimeout(
-            "http://localhost:3000/generate",
-            {
-              method: "POST",
-              body: formData
-            },
-            30000 // Increased timeout for PDF processing
-          );
-        } catch (err) {
-          console.error("❌ Fetch error:", err);
-          setStatus("❌ Request failed: " + err.message);
-          return;
-        }
+        const response = await fetch(`${API_URL}/generate`, {
+          method: "POST",
+          headers: {
+            'Authorization': `Bearer ${currentUser.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ jobText })
+        });
 
         if (!response.ok) {
           const errText = await response.text();
-          console.error("❌ Backend returned error:", errText);
-          setStatus("❌ Backend error:\n" + errText);
+          setStatus("❌ Error: " + errText);
           return;
         }
 
-        // 5. Handle PDF response and trigger download
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -106,12 +191,20 @@ generateBtn.addEventListener("click", async () => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        setStatus("✅ Cover letter PDF generated and downloaded!");
-
+        setStatus("✅ Cover letter downloaded!");
       }
     );
   } catch (err) {
-    console.error(err);
-    setStatus("❌ Error: " + (err.message || String(err)));
+    setStatus("❌ Error: " + err.message);
+  }
+});
+
+// Check if user is already signed in
+chrome.storage.local.get("user", (data) => {
+  if (data.user) {
+    currentUser = data.user;
+    updateUI();
+  } else {
+    updateUI();
   }
 });
