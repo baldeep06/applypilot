@@ -13,6 +13,21 @@ const API_URL = "http://localhost:3000";
 
 let currentUser = null;
 
+// Helper function to get a fresh token (handles refresh automatically)
+async function getAuthToken() {
+  return new Promise((resolve, reject) => {
+    chrome.identity.getAuthToken({ interactive: false }, (token) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else if (!token) {
+        reject(new Error("No token available"));
+      } else {
+        resolve(token);
+      }
+    });
+  });
+}
+
 function setStatus(msg) {
   statusEl.textContent = msg;
 }
@@ -31,11 +46,40 @@ function updateUI() {
 
 async function checkResumeStatus() {
   try {
+    // Get fresh token (Chrome API handles refresh automatically)
+    const token = await getAuthToken();
+    
     const response = await fetch(`${API_URL}/resume-status`, {
       headers: {
-        'Authorization': `Bearer ${currentUser.token}`
+        'Authorization': `Bearer ${token}`
       }
     });
+    
+    // If token expired, remove cache and retry once
+    if (response.status === 401) {
+      chrome.identity.removeCachedAuthToken({ token }, async () => {
+        try {
+          const newToken = await getAuthToken();
+          const retryResponse = await fetch(`${API_URL}/resume-status`, {
+            headers: {
+              'Authorization': `Bearer ${newToken}`
+            }
+          });
+          const retryData = await retryResponse.json();
+          if (retryData.hasResume) {
+            resumeStatusEl.textContent = `✅ Resume saved (${retryData.filename})`;
+            resumeStatusEl.style.color = "green";
+          } else {
+            resumeStatusEl.textContent = "⚠️ No resume saved - upload one below";
+            resumeStatusEl.style.color = "orange";
+          }
+        } catch (retryErr) {
+          console.error("Error retrying resume status check:", retryErr);
+        }
+      });
+      return;
+    }
+    
     const data = await response.json();
     if (data.hasResume) {
       resumeStatusEl.textContent = `✅ Resume saved (${data.filename})`;
@@ -105,13 +149,48 @@ resumeInput.addEventListener("change", async () => {
 
   try {
     setStatus("Uploading resume...");
-    const response = await fetch(`${API_URL}/upload-resume`, {
+    
+    // Get fresh token
+    let token = await getAuthToken();
+    
+    let response = await fetch(`${API_URL}/upload-resume`, {
       method: "POST",
       headers: {
-        'Authorization': `Bearer ${currentUser.token}`
+        'Authorization': `Bearer ${token}`
       },
       body: formData
     });
+
+    // If token expired, refresh and retry once
+    if (response.status === 401) {
+      chrome.identity.removeCachedAuthToken({ token }, async () => {
+        token = await getAuthToken();
+        response = await fetch(`${API_URL}/upload-resume`, {
+          method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setStatus("✅ Resume uploaded and saved!");
+          checkResumeStatus();
+        } else {
+          let errorMsg = "Failed to upload resume";
+          try {
+            const errorData = await response.json();
+            errorMsg = errorData.error || errorMsg;
+          } catch (parseErr) {
+            errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+          }
+          console.error("Upload error:", errorMsg, response.status);
+          setStatus(`❌ ${errorMsg}`);
+        }
+      });
+      return;
+    }
 
     if (response.ok) {
       const data = await response.json();
@@ -169,14 +248,50 @@ generateBtn.addEventListener("click", async () => {
 
         const templateType = templateSelect.value || "default";
 
-        const response = await fetch(`${API_URL}/generate`, {
+        // Get fresh token
+        let token = await getAuthToken();
+        
+        let response = await fetch(`${API_URL}/generate`, {
           method: "POST",
           headers: {
-            'Authorization': `Bearer ${currentUser.token}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ jobText, templateType })
         });
+
+        // If token expired, refresh and retry once
+        if (response.status === 401) {
+          chrome.identity.removeCachedAuthToken({ token }, async () => {
+            token = await getAuthToken();
+            response = await fetch(`${API_URL}/generate`, {
+              method: "POST",
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ jobText, templateType })
+            });
+            
+            if (!response.ok) {
+              const errText = await response.text();
+              setStatus("❌ Error: " + errText);
+              return;
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "cover-letter.pdf";
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            setStatus("✅ Cover letter downloaded!");
+          });
+          return;
+        }
 
         if (!response.ok) {
           const errText = await response.text();

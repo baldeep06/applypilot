@@ -68,7 +68,19 @@ async function verifyToken(req, res, next) {
     const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${token}` }
     });
+
+    if (!response.ok) {
+      console.error(`Google API error: ${response.status} ${response.statusText}`);
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
     const userInfo = await response.json();
+    
+    if (!userInfo.email) {
+      console.error("Google API response missing email:", userInfo);
+      return res.status(401).json({ error: "User email not found in token" });
+    }
+
     req.userEmail = userInfo.email;
 
     // Ensure user exists in database
@@ -76,10 +88,14 @@ async function verifyToken(req, res, next) {
       .from('users')
       .upsert({ email: userInfo.email }, { onConflict: 'email' });
 
-    if (error) console.error("Error upserting user:", error);
+    if (error) {
+      console.error("Error upserting user:", error);
+      // Continue anyway - this is not critical for upload
+    }
 
     next();
   } catch (err) {
+    console.error("Token verification error:", err);
     return res.status(401).json({ error: "Invalid token" });
   }
 }
@@ -87,6 +103,12 @@ async function verifyToken(req, res, next) {
 // Upload resume endpoint
 app.post("/upload-resume", verifyToken, upload.single("resume"), async (req, res) => {
   try {
+    // Validate userEmail is set
+    if (!req.userEmail) {
+      console.error("req.userEmail is missing in upload-resume endpoint");
+      return res.status(401).json({ error: "User authentication failed" });
+    }
+
     const resumeFile = req.file;
     if (!resumeFile) {
       return res.status(400).json({ error: "No resume file provided" });
@@ -173,6 +195,8 @@ app.post("/generate", verifyToken, async (req, res) => {
     let templateFile;
     if (templateType === "short") {
       templateFile = "./templates/shorttemplate.txt";
+    } else if (templateType === "bullet") {
+      templateFile = "./templates/bullettemplate.txt";
     } else {
       // Default to "default" template for undefined, "default", or any other value
       templateFile = "./templates/defaulttemplate.txt";
@@ -264,12 +288,74 @@ app.post("/generate", verifyToken, async (req, res) => {
     doc.pipe(res);
     doc.font('Times-Roman');
     doc.fontSize(11);
-    doc.text(coverLetter, {
-      align: "left",
-      lineGap: 0,
-      paragraphGap: 0,
-      width: 612 - 144
-    });
+
+    // Helper function to render text with markdown bold parsing
+    function renderTextWithBold(doc, text, options) {
+      const lines = text.split('\n');
+      const width = options.width || (612 - 144);
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        if (line.trim().length === 0) {
+          // Empty line - add paragraph spacing
+          doc.moveDown(1);
+          continue;
+        }
+
+        // Parse markdown bold (**text**) and render appropriately
+        // Split by **text** pattern but keep the delimiters in the array
+        const parts = line.split(/(\*\*[^*]+\*\*)/g);
+        
+        let isFirstSegment = true;
+        
+        for (const part of parts) {
+          if (!part) continue;
+          
+          if (part.startsWith('**') && part.endsWith('**')) {
+            // Bold text
+            const boldText = part.slice(2, -2);
+            doc.font('Times-Bold');
+            doc.text(boldText, {
+              width: width,
+              continued: !isFirstSegment,
+              lineGap: 0
+            });
+            doc.font('Times-Roman');
+            isFirstSegment = false;
+          } else {
+            // Regular text
+            doc.text(part, {
+              width: width,
+              continued: !isFirstSegment,
+              lineGap: 0
+            });
+            isFirstSegment = false;
+          }
+        }
+        
+        // Add line break after each line (except last line if it's empty)
+        if (i < lines.length - 1 || line.trim().length > 0) {
+          doc.moveDown(1);
+        }
+      }
+    }
+
+    // Check if text contains markdown bold syntax
+    const hasBoldFormatting = coverLetter.includes('**');
+    
+    if (hasBoldFormatting) {
+      renderTextWithBold(doc, coverLetter, {
+        width: 612 - 144
+      });
+    } else {
+      doc.text(coverLetter, {
+        align: "left",
+        lineGap: 0,
+        paragraphGap: 0,
+        width: 612 - 144
+      });
+    }
 
     doc.end();
   } catch (err) {

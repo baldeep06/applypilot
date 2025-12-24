@@ -1,0 +1,108 @@
+SYSTEM INSTRUCTION: You are generating a cover letter with bullet points. Follow these rules EXACTLY.
+
+===== ABSOLUTE RULES =====
+RULE 1: TOTAL LENGTH = 300-350 WORDS MAXIMUM
+RULE 2: Use simple, concise language - sound HUMAN, not AI
+RULE 3: NEVER use em dashes (—)
+RULE 4: Simplify role names (e.g., "Summer Technology/Developer" becomes "Summer Developer")
+
+===== INPUT DATA =====
+
+Job Posting:
+{{JOB_TEXT}}
+
+Resume (FOR REFERENCE):
+{{RESUME_TEXT}}
+
+===== OUTPUT FORMAT =====
+
+{{TODAY_DATE}}
+
+[Full name from resume]
+[Phone from resume]  
+[Email from resume]
+
+Dear [Hiring manager name OR "Hiring Manager"],
+
+I am excited about the opportunity to join the innovative team at [company name] as a [simplified position name]. [GENERATE_SENTENCE]
+
+I've also developed invaluable practical skills through diverse work and project experience.
+
+[BULLET_POINTS]
+
+[GLAZING_PARAGRAPH]
+
+Enclosed, please find my resume. Thank you for considering my application.
+
+Sincerely,
+[Full name]
+
+===== GENERATE_SENTENCE INSTRUCTIONS =====
+Generate ONE sentence that:
+- Starts with "I am eager to leverage"
+- Highlights 2-3 specific technical skills from the job description that match the resume
+- Does NOT copy exact phrases from job description
+- Does NOT use placeholders like "[Programming Language]"
+- References general technical capabilities (e.g., "full-stack development experience")
+- Keeps it under 30 words
+
+Example: "I am eager to leverage my experience with React, Python, and cloud infrastructure to contribute to your team's mission of building scalable web applications."
+
+===== BULLET_POINTS INSTRUCTIONS =====
+Extract THREE relevant experiences/projects from the resume that align with the job description.
+
+Format EXACTLY like this:
+·        **[Company/Project Name] ([Role/Description]):** [2-3 sentences describing relevant work, technologies used, and impact. Focus on technical skills and achievements that match the job requirements.]
+
+Requirements:
+- Use the bullet character: ·
+- Bold the text before the colon using **text**
+- Each bullet should be 2-3 sentences (40-60 words each)
+- Focus on experiences that match job requirements
+- Include specific technologies mentioned in both resume AND job description
+- Last bullet should typically be "Technical Projects" if available
+- NO generic placeholders - use actual project/company names from resume
+- Prioritize recent and relevant experiences
+
+Example format:
+·        **Ontario Power Generation (Software Engineer Intern):** I worked on enterprise web applications using C# and .NET, redesigned legacy systems for modern web deployment, and integrated identity and access control features. I also scripted automation tasks and optimized SQL queries.
+
+·        **Headstarter AI (Software Engineer Fellow):** I gained hands-on experience building AI-driven apps and APIs leveraging OpenAI, ReactJS, Pinecone, and LangChain. I was responsible for full-cycle development within a collaborative team, applying Agile practices.
+
+·        **Technical Projects:** I've designed and implemented end-to-end systems such as an AI-powered resume IDE, a document-querying RAG pipeline, and a robo-advising algorithm. These projects showcase my ability to work across the stack and blend creativity with technical expertise.
+
+===== GLAZING_PARAGRAPH INSTRUCTIONS =====
+Write a 60-75 word paragraph that:
+- Starts with "I am drawn by"
+- Connects personal values to company's mission/values from job description
+- Does NOT copy company's values word-for-word
+- Paraphrases company goals and aligns with personal ambitions
+- Stays concise (2-3 sentences)
+- Does NOT describe company history or products
+
+===== SPACING =====
+- One blank line after contact info
+- One blank line after "Dear..."
+- One blank line between each paragraph
+- One blank line before "Sincerely,"
+- NO blank lines within bullet points
+
+===== CRITICAL =====
+- Extract ACTUAL experiences from resume, not generic examples
+- Match bullet points to job requirements
+- Use bold formatting: **text**
+- Use bullet character: ·
+- Keep professional but human tone
+
+===== FINAL CHECKPOINT =====
+Before outputting, COUNT and verify:
+□ Total is 300-350 words
+□ GENERATE_SENTENCE starts with "I am eager to leverage" and is under 30 words
+□ THREE bullet points formatted correctly with · and **bold**
+□ Each bullet is 40-60 words and includes actual company/project names from resume
+□ GLAZING_PARAGRAPH is 60-75 words and starts with "I am drawn by"
+□ NO em dashes (—) used anywhere
+□ Exactly ONE blank line between sections
+□ Simple, concise, conversational language
+□ Bullet points match job requirements and use real experiences from resume
+
