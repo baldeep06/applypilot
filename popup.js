@@ -3,6 +3,7 @@ const signOutBtn = document.getElementById("signOutBtn");
 const generateBtn = document.getElementById("generateBtn");
 const statusEl = document.getElementById("status");
 const resumeInput = document.getElementById("resumeInput");
+const templateSelect = document.getElementById("templateSelect");
 const userEmailEl = document.getElementById("userEmail");
 const resumeStatusEl = document.getElementById("resumeStatus");
 const signedOutView = document.getElementById("signedOutView");
@@ -166,13 +167,15 @@ generateBtn.addEventListener("click", async () => {
 
         setStatus("Generating cover letter...");
 
+        const templateType = templateSelect.value || "default";
+
         const response = await fetch(`${API_URL}/generate`, {
           method: "POST",
           headers: {
             'Authorization': `Bearer ${currentUser.token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ jobText })
+          body: JSON.stringify({ jobText, templateType })
         });
 
         if (!response.ok) {

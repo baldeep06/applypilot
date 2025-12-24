@@ -28,7 +28,6 @@ const supabase = createClient(
 );
 
 const upload = multer({ storage: multer.memoryStorage() });
-const TEMPLATE = fs.readFileSync("./templates/defaulttemplate.txt", "utf-8");
 
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ GEMINI_API_KEY missing in .env");
@@ -164,10 +163,27 @@ app.get("/resume-status", verifyToken, async (req, res) => {
 // Generate cover letter
 app.post("/generate", verifyToken, async (req, res) => {
   try {
-    const { jobText } = req.body;
+    const { jobText, templateType } = req.body;
 
     if (!jobText) {
       return res.status(400).json({ error: "Missing jobText" });
+    }
+
+    // Load template based on templateType
+    let templateFile;
+    if (templateType === "short") {
+      templateFile = "./templates/shorttemplate.txt";
+    } else {
+      // Default to "default" template for undefined, "default", or any other value
+      templateFile = "./templates/defaulttemplate.txt";
+    }
+
+    let template;
+    try {
+      template = fs.readFileSync(templateFile, "utf-8");
+    } catch (err) {
+      console.error(`Error loading template ${templateFile}:`, err);
+      return res.status(500).json({ error: "Failed to load template" });
     }
 
     // Get resume metadata
@@ -213,7 +229,7 @@ app.post("/generate", verifyToken, async (req, res) => {
       day: 'numeric' 
     });
 
-    const prompt = TEMPLATE
+    const prompt = template
       .replace("{{TODAY_DATE}}", today)
       .replace("{{JOB_TEXT}}", jobText)
       .replace("{{RESUME_TEXT}}", resumeText);

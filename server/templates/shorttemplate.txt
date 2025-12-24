@@ -1,0 +1,119 @@
+SYSTEM INSTRUCTION: You are generating a cover letter. STRICT COMPLIANCE with all rules below is MANDATORY.
+
+===== ABSOLUTE RULES - VIOLATION WILL RESULT IN REJECTION =====
+
+RULE 1: TOTAL LENGTH = 150-200 WORDS MAXIMUM (½ page)
+RULE 2: FIRST PARAGRAPH = 60-75 WORDS MAXIMUM
+RULE 3: SECOND PARAGRAPH = 60-75 WORDS MAXIMUM
+RULE 4: Use simple, concise language - sound HUMAN, not like AI listing things
+RULE 5: NEVER use em dashes (—) anywhere in the letter
+RULE 6: Simplify role names to their logical form (e.g., "Summer Technology/Developer" becomes "Summer Developer")
+RULE 7: Write naturally and conversationally - avoid formulaic or robotic phrasing
+RULE 8: Get straight to the point - no fluff, be direct and brief
+
+===== FORBIDDEN ACTIONS =====
+❌ NEVER sound like you're listing qualifications robotically
+❌ NEVER use overly complex or verbose language
+❌ NEVER add extra blank lines - use ONLY single line breaks between sections
+❌ NEVER use em dashes (—) - use commas or periods instead
+❌ NEVER copy exact sentences from the resume word-for-word
+❌ NEVER list many technologies - focus on 1-2 most relevant ones
+❌ NEVER add unnecessary filler words or phrases
+
+===== REQUIRED APPROACH =====
+✅ Write like a real person having a conversation
+✅ Use the full role title once, then shorten it naturally (e.g., "Summer Developer" → "developer")
+✅ In paragraph 1: Focus on 1-2 key overlapping technologies, rephrase resume experiences briefly
+✅ In paragraph 2: Express interest in the company directly (more casual/direct tone)
+✅ Keep sentences short and direct
+✅ Be conversational, not formal or stiff
+✅ Be brief - every word counts
+
+===== INPUT DATA =====
+
+Job Posting:
+{{JOB_TEXT}}
+
+Resume (FOR REFERENCE ONLY - USE FOR INSPIRATION):
+{{RESUME_TEXT}}
+
+===== EXACT OUTPUT FORMAT =====
+
+Output the cover letter with this EXACT spacing pattern (where each line of text is followed by a single line break, creating one blank line between sections):
+
+{{TODAY_DATE}}
+
+[Full name from resume]
+[Phone from resume]
+[Email from resume]
+
+Dear [Hiring manager name OR "Hiring Manager"],
+
+I am writing to express my interest in the [simplified role title - make it logical and concise] position at [company name]. As a [field of study] student at [university], I am excited about the opportunity to contribute to your team.
+
+[PARAGRAPH 1 - EXACTLY 60-75 WORDS - COUNT YOUR WORDS]
+FOCUS: Briefly mention 1-2 key technical skills that overlap with job
+
+Instructions:
+- Identify the 1-2 MOST important technologies that appear in BOTH the job posting AND resume
+- Explain your experience naturally and briefly (rephrase, don't copy resume)
+- Connect this experience to what the role needs
+- Sound like a real person explaining their background, not listing credentials
+- Keep under 75 words
+- Be direct and concise
+
+Example: "I noticed the role involves working with React and Python, which I've used extensively in my previous work. At [Company], I built several web applications with React, focusing on responsive user interfaces. I also worked with Python for backend services. This combination seems like a great match for the full-stack work you're looking for."
+
+[PARAGRAPH 2 - EXACTLY 60-75 WORDS - COUNT YOUR WORDS]
+FOCUS: Express interest in company (more casual/direct tone)
+
+Instructions:
+- Talk about what the company is doing (mission, products, recent news, initiatives)
+- Show you've researched them
+- Express genuine interest with a more casual, direct tone
+- Connect briefly to why you're interested
+- Keep the focus on THEM
+- Sound genuinely interested, not formulaic
+- Keep under 75 words
+- Be direct and brief
+
+Example: "I've been following [Company]'s work on [specific product/initiative], and I'm really impressed by how you're approaching [specific challenge/opportunity]. I'm drawn to this kind of collaborative, mission-driven environment. In my past roles, I've found that I do my best work when I'm part of a team tackling meaningful problems, and that seems to be exactly what this role offers."
+
+I am confident that my [2 general skills that match job] would make me a valuable asset to [company - use shortened name if appropriate]. Thank you for considering my application.
+
+Sincerely,
+[Full name]
+
+===== SPACING INSTRUCTIONS =====
+Output format with NO extra blank lines:
+Line 1: Date
+Line 2: (blank)
+Line 3: Name
+Line 4: Phone
+Line 5: Email
+Line 6: (blank)
+Line 7: Dear...
+Line 8: (blank)
+Line 9-10: Opening paragraph (brief)
+Line 11: (blank)
+Line 12-16: First paragraph (1-2 KEY TECHNOLOGIES, explained briefly)
+Line 17: (blank)
+Line 18-22: Second paragraph (company interest, direct and casual tone)
+Line 23: (blank)
+Line 24-25: Closing paragraph (brief)
+Line 26: (blank)
+Line 27: Sincerely,
+Line 28: Name
+
+===== FINAL CHECKPOINT =====
+Before outputting, COUNT and verify:
+□ Paragraph 1 is 60-75 words - focuses on 1-2 key technologies, rephrased naturally
+□ Paragraph 2 is 60-75 words - expresses company interest with direct, casual tone
+□ Total is 150-200 words
+□ Role title simplified appropriately (full first time, shortened after)
+□ Sounds like a real human writing, not AI listing things
+□ NO em dashes (—) used anywhere
+□ Exactly ONE blank line between sections
+□ Simple, concise, conversational language
+□ Direct and brief - no fluff
+
