@@ -52,6 +52,103 @@ const model = genAI.getGenerativeModel({
   }
 });
 
+// Helper function to extract candidate name from resume
+async function extractCandidateName(resumeText) {
+  try {
+    // Try simple extraction first - name is usually on first line
+    const firstLine = resumeText.split('\n')[0].trim();
+    // If first line looks like a name (2-4 words, no special chars except spaces and hyphens)
+    if (firstLine.match(/^[A-Za-z\s-]{2,50}$/) && firstLine.split(/\s+/).length >= 2 && firstLine.split(/\s+/).length <= 4) {
+      return firstLine;
+    }
+    
+    // Fallback: use LLM extraction
+    const prompt = `Extract the candidate's full name from this resume text. Return ONLY the name, nothing else. If you can't find it, return "Candidate".
+
+Resume text:
+${resumeText.substring(0, 1000)}
+
+Name:`;
+    
+    const result = await model.generateContent(prompt);
+    const name = result.response.text().trim();
+    return name || "Candidate";
+  } catch (err) {
+    console.error("Error extracting candidate name:", err);
+    return "Candidate";
+  }
+}
+
+// Helper function to extract company and position from job posting
+async function extractJobInfo(jobText) {
+  try {
+    const prompt = `Extract the company name and job position/title from this job posting. Be precise and extract only the essential information.
+
+IMPORTANT RULES:
+1. For company name: Extract ONLY the core company/organization name. Do NOT include:
+   - Program names (e.g., "Summer Student Opportunities", "Co-op Program")
+   - Years (e.g., "2026", "2025")
+   - Department names (e.g., "Capital Markets", "QTS")
+   - Location details
+   - Any descriptive text after the company name
+   
+   Examples:
+   - "RBC 2026 Summer Student Opportunities" → "RBC"
+   - "Google Software Engineer Intern 2025" → "Google"
+   - "Microsoft Azure Cloud Solutions" → "Microsoft"
+   - "TD Bank Capital Markets Division" → "TD Bank"
+
+2. For position/job title: Extract the actual job title or role name. Keep it concise but descriptive.
+   Examples:
+   - "Software Developer"
+   - "Data Analyst"
+   - "Product Manager"
+   - "Software Engineer Intern"
+
+Job posting:
+${jobText.substring(0, 2000)}
+
+Return ONLY a JSON object with "company" and "position" fields. No other text.
+Example format: {"company": "RBC", "position": "Software Developer"}`;
+    
+    const result = await model.generateContent(prompt);
+    let responseText = result.response.text().trim();
+    
+    // Extract JSON from response (might be wrapped in markdown code blocks)
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const jobInfo = JSON.parse(jsonMatch[0]);
+      // Clean up company name - remove common suffixes/prefixes that might have slipped through
+      let company = (jobInfo.company || "Company").trim();
+      // Remove year patterns
+      company = company.replace(/\s+\d{4}\s*/g, ' ').trim();
+      // Remove common program indicators
+      company = company.replace(/\s+(Summer|Winter|Spring|Fall|Co-op|Coop|Student|Opportunities|Program).*/gi, '').trim();
+      // Take only the first meaningful part (before common separators like dash, comma for departments)
+      company = company.split(/[-–—,]/)[0].trim();
+      
+      return {
+        company: company || "Company",
+        position: (jobInfo.position || "Position").trim()
+      };
+    }
+    
+    return { company: "Company", position: "Position" };
+  } catch (err) {
+    console.error("Error extracting job info:", err);
+    return { company: "Company", position: "Position" };
+  }
+}
+
+// Helper function to sanitize filename
+function sanitizeFilename(text) {
+  return text
+    .replace(/[<>:"/\\|?*]/g, '') // Remove invalid filename chars
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim()
+    .substring(0, 100); // Limit length
+}
+
 // Helper function to generate PDF from cover letter text
 function generatePDFBuffer(coverLetter) {
   return new Promise((resolve, reject) => {
@@ -663,8 +760,20 @@ app.post("/generate", verifyToken, async (req, res) => {
       return res.status(500).json({ error: "No text returned from Gemini" });
     }
 
-    // Return cover letter text as JSON
-    res.json({ success: true, coverLetter });
+    // Extract metadata for filename
+    const candidateName = await extractCandidateName(resumeText);
+    const jobInfo = await extractJobInfo(jobText);
+
+    // Return cover letter text and metadata as JSON
+    res.json({ 
+      success: true, 
+      coverLetter,
+      metadata: {
+        candidateName: candidateName,
+        company: jobInfo.company,
+        position: jobInfo.position
+      }
+    });
   } catch (err) {
     console.error("Server error:", err);
     if (!res.headersSent) {
@@ -675,7 +784,7 @@ app.post("/generate", verifyToken, async (req, res) => {
 
 app.post("/generate-pdf", verifyToken, async (req, res) => {
   try {
-    const { coverLetter } = req.body;
+    const { coverLetter, metadata } = req.body;
 
     if (!coverLetter) {
       return res.status(400).json({ error: "Missing coverLetter text" });
@@ -683,8 +792,20 @@ app.post("/generate-pdf", verifyToken, async (req, res) => {
 
     const pdfBuffer = await generatePDFBuffer(coverLetter);
 
+    // Generate filename from metadata: {Name} - {Company} {Position}.pdf
+    let filename = "cover-letter.pdf";
+    if (metadata && metadata.candidateName && metadata.company && metadata.position) {
+      const name = sanitizeFilename(metadata.candidateName);
+      const company = sanitizeFilename(metadata.company);
+      const position = sanitizeFilename(metadata.position);
+      // Only use custom filename if we have real values (not defaults)
+      if (name !== "Candidate" && company !== "Company" && position !== "Position") {
+        filename = `${name} - ${company} ${position}.pdf`;
+      }
+    }
+
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", "attachment; filename=cover-letter.pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
   } catch (err) {
     console.error("PDF generation error:", err);
@@ -696,7 +817,7 @@ app.post("/generate-pdf", verifyToken, async (req, res) => {
 
 app.post("/generate-docx", verifyToken, async (req, res) => {
   try {
-    const { coverLetter } = req.body;
+    const { coverLetter, metadata } = req.body;
 
     if (!coverLetter) {
       return res.status(400).json({ error: "Missing coverLetter text" });
@@ -704,8 +825,20 @@ app.post("/generate-docx", verifyToken, async (req, res) => {
 
     const docxBuffer = await generateDOCXBuffer(coverLetter);
 
+    // Generate filename from metadata: {Name} - {Company} {Position}.docx
+    let filename = "cover-letter.docx";
+    if (metadata && metadata.candidateName && metadata.company && metadata.position) {
+      const name = sanitizeFilename(metadata.candidateName);
+      const company = sanitizeFilename(metadata.company);
+      const position = sanitizeFilename(metadata.position);
+      // Only use custom filename if we have real values (not defaults)
+      if (name !== "Candidate" && company !== "Company" && position !== "Position") {
+        filename = `${name} - ${company} ${position}.docx`;
+      }
+    }
+
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-    res.setHeader("Content-Disposition", "attachment; filename=cover-letter.docx");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(docxBuffer);
   } catch (err) {
     console.error("DOCX generation error:", err);
