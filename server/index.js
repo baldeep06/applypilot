@@ -7,6 +7,7 @@ import pdfParse from "pdf-parse";
 import PDFDocument from "pdfkit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from '@supabase/supabase-js';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 
 dotenv.config();
 
@@ -50,6 +51,293 @@ const model = genAI.getGenerativeModel({
     maxOutputTokens: 4096
   }
 });
+
+// Helper function to generate PDF from cover letter text
+function generatePDFBuffer(coverLetter) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    const doc = new PDFDocument({
+      margins: { top: 72, bottom: 72, left: 72, right: 72 },
+      size: [612, 792]
+    });
+
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    doc.font('Times-Roman');
+    doc.fontSize(11);
+
+    // Check if text contains bullets or bold formatting
+    const hasBullets = coverLetter.match(/^[*·]\s+/m);
+    const hasBold = coverLetter.includes('**');
+    
+    if (hasBullets || hasBold) {
+      // Process line by line with bullet and bold support
+      const lines = coverLetter.split('\n');
+      let isHeaderSection = true;
+      let headerLines = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        // Detect end of header (when we hit "Dear")
+        if (line.trim().startsWith('Dear')) {
+          isHeaderSection = false;
+          
+          // Render header with tight spacing
+          if (headerLines.length > 0) {
+            // First line is date
+            doc.text(headerLines[0], { lineGap: 0 });
+            doc.moveDown(0.5); // Small space after date
+            
+            // Name, phone, email with NO spacing between them
+            for (let j = 1; j < headerLines.length; j++) {
+              doc.text(headerLines[j], { lineGap: 0 });
+            }
+            doc.moveDown(0.5); // Small space after contact info
+            headerLines = [];
+          }
+        }
+        
+        // Accumulate header lines
+        if (isHeaderSection && line.trim().length > 0) {
+          headerLines.push(line.trim());
+          continue;
+        }
+        
+        // Skip empty lines in header
+        if (isHeaderSection && line.trim().length === 0) {
+          continue;
+        }
+        
+        // Handle empty lines (paragraph breaks)
+        if (line.trim().length === 0) {
+          doc.moveDown(0.5);
+          continue;
+        }
+
+        // Check if line starts with bullet
+        const bulletMatch = line.match(/^([*·])\s+(.*)$/);
+        
+        if (bulletMatch) {
+          const bulletContent = bulletMatch[2];
+          
+          // Parse bold formatting and create formatted text
+          const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
+          let formattedParts = [];
+          
+          for (const part of parts) {
+            if (!part) continue;
+            
+            if (part.startsWith('**') && part.endsWith('**')) {
+              formattedParts.push({
+                text: part.slice(2, -2),
+                bold: true
+              });
+            } else if (part.trim()) {
+              formattedParts.push({
+                text: part,
+                bold: false
+              });
+            }
+          }
+          
+          // Save X position and add indent
+          const originalX = doc.x;
+          doc.x = originalX + 24;
+          
+          // Render bullet manually with bold support
+          const startY = doc.y;
+          doc.text('•', originalX + 24, startY, {
+            continued: false,
+            width: 20
+          });
+          
+          // Render text parts
+          doc.x = originalX + 44; // Position after bullet
+          doc.y = startY;
+          
+          for (let i = 0; i < formattedParts.length; i++) {
+            const { text, bold } = formattedParts[i];
+            if (bold) {
+              doc.font('Times-Bold');
+            } else {
+              doc.font('Times-Roman');
+            }
+            
+            doc.text(text, {
+              continued: i < formattedParts.length - 1,
+              width: 612 - 144 - 44,
+              lineGap: 0
+            });
+          }
+          
+          // End line and reset
+          doc.font('Times-Roman');
+          doc.x = originalX;
+          doc.moveDown(0.5);
+          
+        } else {
+          // Regular line - handle bold formatting
+          const parts = line.split(/(\*\*[^*]+\*\*)/g);
+          let isFirst = true;
+          
+          for (const part of parts) {
+            if (!part) continue;
+            
+            if (part.startsWith('**') && part.endsWith('**')) {
+              const boldText = part.slice(2, -2);
+              doc.font('Times-Bold');
+              doc.text(boldText, { continued: !isFirst, lineGap: 0 });
+              doc.font('Times-Roman');
+            } else {
+              doc.text(part, { continued: !isFirst, lineGap: 0 });
+            }
+            isFirst = false;
+          }
+          
+          if (!isFirst) {
+            doc.text(''); // End line
+          }
+          doc.moveDown(0.5);
+        }
+      }
+    } else {
+      // Simple text without formatting
+      doc.text(coverLetter, {
+        align: "left",
+        lineGap: 0,
+        paragraphGap: 0,
+        width: 612 - 144
+      });
+    }
+
+    doc.end();
+  });
+}
+
+// Helper function to generate DOCX from cover letter text
+async function generateDOCXBuffer(coverLetter) {
+  const lines = coverLetter.split('\n');
+  const paragraphs = [];
+  let isHeaderSection = true;
+  let headerLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Detect end of header (when we hit "Dear")
+    if (line.startsWith('Dear')) {
+      isHeaderSection = false;
+      
+      // Add header lines as separate paragraphs
+      if (headerLines.length > 0) {
+        paragraphs.push(new Paragraph({
+          children: [new TextRun(headerLines[0])],
+          spacing: { after: 120 }
+        }));
+        
+        // Add contact info lines
+        for (let j = 1; j < headerLines.length; j++) {
+          paragraphs.push(new Paragraph({
+            children: [new TextRun(headerLines[j])],
+            spacing: { after: 0 }
+          }));
+        }
+        headerLines = [];
+        paragraphs.push(new Paragraph({ children: [new TextRun("")], spacing: { after: 240 } }));
+      }
+    }
+
+    // Accumulate header lines
+    if (isHeaderSection && line.length > 0) {
+      headerLines.push(line);
+      continue;
+    }
+
+    // Skip empty lines in header
+    if (isHeaderSection && line.length === 0) {
+      continue;
+    }
+
+    // Handle empty lines (paragraph breaks)
+    if (line.length === 0) {
+      paragraphs.push(new Paragraph({ children: [new TextRun("")], spacing: { after: 240 } }));
+      continue;
+    }
+
+    // Check if line starts with bullet
+    const bulletMatch = line.match(/^[*·]\s+(.*)$/);
+    
+    if (bulletMatch) {
+      const bulletContent = bulletMatch[1];
+      
+      // Parse bold formatting
+      const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
+      const textRuns = [];
+      
+      for (const part of parts) {
+        if (!part) continue;
+        
+        if (part.startsWith('**') && part.endsWith('**')) {
+          textRuns.push(new TextRun({
+            text: part.slice(2, -2),
+            bold: true
+          }));
+        } else {
+          textRuns.push(new TextRun({ text: part }));
+        }
+      }
+      
+      // Only add paragraph if there are text runs
+      if (textRuns.length > 0) {
+        // Add bullet character as first text run
+        textRuns.unshift(new TextRun({ text: "• " }));
+        
+        paragraphs.push(new Paragraph({
+          children: textRuns,
+          indent: { left: 360 }, // 0.25 inch indent for bullets
+          spacing: { after: 120 }
+        }));
+      }
+    } else {
+      // Regular line - handle bold formatting
+      const parts = line.split(/(\*\*[^*]+\*\*)/g);
+      const textRuns = [];
+      
+      for (const part of parts) {
+        if (!part) continue;
+        
+        if (part.startsWith('**') && part.endsWith('**')) {
+          textRuns.push(new TextRun({
+            text: part.slice(2, -2),
+            bold: true
+          }));
+        } else {
+          textRuns.push(new TextRun({ text: part }));
+        }
+      }
+      
+      // Only add paragraph if there are text runs
+      if (textRuns.length > 0) {
+        paragraphs.push(new Paragraph({
+          children: textRuns,
+          spacing: { after: 240 }
+        }));
+      }
+    }
+  }
+
+  const doc = new Document({
+    sections: [{
+      properties: {},
+      children: paragraphs
+    }]
+  });
+
+  return await Packer.toBuffer(doc);
+}
 
 async function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -258,167 +546,52 @@ app.post("/generate", verifyToken, async (req, res) => {
       return res.status(500).json({ error: "No text returned from Gemini" });
     }
 
-    // Generate PDF
-    const doc = new PDFDocument({
-      margins: { top: 72, bottom: 72, left: 72, right: 72 },
-      size: [612, 792]
-    });
+    // Return cover letter text as JSON
+    res.json({ success: true, coverLetter });
+  } catch (err) {
+    console.error("Server error:", err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: String(err) });
+    }
+  }
+});
+
+app.post("/generate-pdf", verifyToken, async (req, res) => {
+  try {
+    const { coverLetter } = req.body;
+
+    if (!coverLetter) {
+      return res.status(400).json({ error: "Missing coverLetter text" });
+    }
+
+    const pdfBuffer = await generatePDFBuffer(coverLetter);
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=cover-letter.pdf");
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error("PDF generation error:", err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: String(err) });
+    }
+  }
+});
 
-    doc.pipe(res);
-    doc.font('Times-Roman');
-    doc.fontSize(11);
+app.post("/generate-docx", verifyToken, async (req, res) => {
+  try {
+    const { coverLetter } = req.body;
 
-    // Check if text contains bullets or bold formatting
-    const hasBullets = coverLetter.match(/^[*·]\s+/m);
-    const hasBold = coverLetter.includes('**');
-    
-    if (hasBullets || hasBold) {
-      // Process line by line with bullet and bold support
-      const lines = coverLetter.split('\n');
-      let isHeaderSection = true;
-      let headerLines = [];
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        
-        // Detect end of header (when we hit "Dear")
-        if (line.trim().startsWith('Dear')) {
-          isHeaderSection = false;
-          
-          // Render header with tight spacing
-          if (headerLines.length > 0) {
-            // First line is date
-            doc.text(headerLines[0], { lineGap: 0 });
-            doc.moveDown(0.5); // Small space after date
-            
-            // Name, phone, email with NO spacing between them
-            for (let j = 1; j < headerLines.length; j++) {
-              doc.text(headerLines[j], { lineGap: 0 });
-            }
-            doc.moveDown(0.5); // Small space after contact info
-            headerLines = [];
-          }
-        }
-        
-        // Accumulate header lines
-        if (isHeaderSection && line.trim().length > 0) {
-          headerLines.push(line.trim());
-          continue;
-        }
-        
-        // Skip empty lines in header
-        if (isHeaderSection && line.trim().length === 0) {
-          continue;
-        }
-        
-        // Handle empty lines (paragraph breaks)
-        if (line.trim().length === 0) {
-          doc.moveDown(0.5);
-          continue;
-        }
-
-        // Check if line starts with bullet
-        const bulletMatch = line.match(/^([*·])\s+(.*)$/);
-        
-        if (bulletMatch) {
-          const bulletContent = bulletMatch[2];
-          
-          // Parse bold formatting and create formatted text
-          const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
-          let formattedParts = [];
-          
-          for (const part of parts) {
-            if (!part) continue;
-            
-            if (part.startsWith('**') && part.endsWith('**')) {
-              formattedParts.push({
-                text: part.slice(2, -2),
-                bold: true
-              });
-            } else if (part.trim()) {
-              formattedParts.push({
-                text: part,
-                bold: false
-              });
-            }
-          }
-          
-          // Save X position and add indent
-          const originalX = doc.x;
-          doc.x = originalX + 24;
-          
-          // Render bullet manually with bold support
-          const startY = doc.y;
-          doc.text('•', originalX + 24, startY, {
-            continued: false,
-            width: 20
-          });
-          
-          // Render text parts
-          doc.x = originalX + 44; // Position after bullet
-          doc.y = startY;
-          
-          for (let i = 0; i < formattedParts.length; i++) {
-            const { text, bold } = formattedParts[i];
-            if (bold) {
-              doc.font('Times-Bold');
-            } else {
-              doc.font('Times-Roman');
-            }
-            
-            doc.text(text, {
-              continued: i < formattedParts.length - 1,
-              width: 612 - 144 - 44,
-              lineGap: 0
-            });
-          }
-          
-          // End line and reset
-          doc.font('Times-Roman');
-          doc.x = originalX;
-          doc.moveDown(0.5);
-          
-        } else {
-          // Regular line - handle bold formatting
-          const parts = line.split(/(\*\*[^*]+\*\*)/g);
-          let isFirst = true;
-          
-          for (const part of parts) {
-            if (!part) continue;
-            
-            if (part.startsWith('**') && part.endsWith('**')) {
-              const boldText = part.slice(2, -2);
-              doc.font('Times-Bold');
-              doc.text(boldText, { continued: !isFirst, lineGap: 0 });
-              doc.font('Times-Roman');
-            } else {
-              doc.text(part, { continued: !isFirst, lineGap: 0 });
-            }
-            isFirst = false;
-          }
-          
-          if (!isFirst) {
-            doc.text(''); // End line
-          }
-          doc.moveDown(0.5);
-        }
-      }
-    } else {
-      // Simple text without formatting
-      doc.text(coverLetter, {
-        align: "left",
-        lineGap: 0,
-        paragraphGap: 0,
-        width: 612 - 144
-      });
+    if (!coverLetter) {
+      return res.status(400).json({ error: "Missing coverLetter text" });
     }
 
-    doc.end();
+    const docxBuffer = await generateDOCXBuffer(coverLetter);
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.setHeader("Content-Disposition", "attachment; filename=cover-letter.docx");
+    res.send(docxBuffer);
   } catch (err) {
-    console.error("Server error:", err);
+    console.error("DOCX generation error:", err);
     if (!res.headersSent) {
       res.status(500).json({ error: String(err) });
     }
