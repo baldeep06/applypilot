@@ -14,8 +14,6 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// Initialize Supabase with service role key for server-side operations
-// Service role key bypasses RLS policies
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY,
@@ -41,8 +39,6 @@ if (!process.env.SUPABASE_URL) {
 
 if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY) {
   console.error("❌ SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY missing in .env");
-  console.error("   For server-side operations, SUPABASE_SERVICE_ROLE_KEY is recommended");
-  console.error("   (it bypasses RLS policies)");
   process.exit(1);
 }
 
@@ -55,7 +51,6 @@ const model = genAI.getGenerativeModel({
   }
 });
 
-// Middleware to verify Google token
 async function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -83,14 +78,12 @@ async function verifyToken(req, res, next) {
 
     req.userEmail = userInfo.email;
 
-    // Ensure user exists in database
     const { error } = await supabase
       .from('users')
       .upsert({ email: userInfo.email }, { onConflict: 'email' });
 
     if (error) {
       console.error("Error upserting user:", error);
-      // Continue anyway - this is not critical for upload
     }
 
     next();
@@ -100,10 +93,8 @@ async function verifyToken(req, res, next) {
   }
 }
 
-// Upload resume endpoint
 app.post("/upload-resume", verifyToken, upload.single("resume"), async (req, res) => {
   try {
-    // Validate userEmail is set
     if (!req.userEmail) {
       console.error("req.userEmail is missing in upload-resume endpoint");
       return res.status(401).json({ error: "User authentication failed" });
@@ -116,7 +107,6 @@ app.post("/upload-resume", verifyToken, upload.single("resume"), async (req, res
 
     const storagePath = `${req.userEmail}/resume.pdf`;
 
-    // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('resumes')
       .upload(storagePath, resumeFile.buffer, {
@@ -131,7 +121,6 @@ app.post("/upload-resume", verifyToken, upload.single("resume"), async (req, res
       });
     }
 
-    // Save metadata to database
     const { error: dbError } = await supabase
       .from('resumes')
       .upsert({
@@ -157,7 +146,6 @@ app.post("/upload-resume", verifyToken, upload.single("resume"), async (req, res
   }
 });
 
-// Check resume status
 app.get("/resume-status", verifyToken, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -182,7 +170,6 @@ app.get("/resume-status", verifyToken, async (req, res) => {
   }
 });
 
-// Generate cover letter
 app.post("/generate", verifyToken, async (req, res) => {
   try {
     const { jobText, templateType } = req.body;
@@ -191,14 +178,12 @@ app.post("/generate", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Missing jobText" });
     }
 
-    // Load template based on templateType
     let templateFile;
     if (templateType === "short") {
       templateFile = "./templates/shorttemplate.txt";
     } else if (templateType === "bullet") {
       templateFile = "./templates/bullettemplate.txt";
     } else {
-      // Default to "default" template for undefined, "default", or any other value
       templateFile = "./templates/defaulttemplate.txt";
     }
 
@@ -210,7 +195,6 @@ app.post("/generate", verifyToken, async (req, res) => {
       return res.status(500).json({ error: "Failed to load template" });
     }
 
-    // Get resume metadata
     const { data: resumeData, error: resumeError } = await supabase
       .from('resumes')
       .select('storage_path')
@@ -221,7 +205,6 @@ app.post("/generate", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "No resume saved. Please upload a resume first." });
     }
 
-    // Download resume from storage
     const { data: fileData, error: downloadError } = await supabase.storage
       .from('resumes')
       .download(resumeData.storage_path);
@@ -231,10 +214,8 @@ app.post("/generate", verifyToken, async (req, res) => {
       return res.status(500).json({ error: "Failed to retrieve resume" });
     }
 
-    // Convert blob to buffer
     const buffer = Buffer.from(await fileData.arrayBuffer());
 
-    // Extract text from PDF
     let resumeText;
     try {
       const pdfData = await pdfParse(buffer);
@@ -248,6 +229,7 @@ app.post("/generate", verifyToken, async (req, res) => {
     }
 
     const today = new Date().toLocaleDateString('en-US', { 
+      timeZone: 'America/New_York',
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
@@ -289,66 +271,143 @@ app.post("/generate", verifyToken, async (req, res) => {
     doc.font('Times-Roman');
     doc.fontSize(11);
 
-    // Helper function to render text with markdown bold parsing
-    function renderTextWithBold(doc, text, options) {
-      const lines = text.split('\n');
-      const width = options.width || (612 - 144);
+    // Check if text contains bullets or bold formatting
+    const hasBullets = coverLetter.match(/^[*·]\s+/m);
+    const hasBold = coverLetter.includes('**');
+    
+    if (hasBullets || hasBold) {
+      // Process line by line with bullet and bold support
+      const lines = coverLetter.split('\n');
+      let isHeaderSection = true;
+      let headerLines = [];
       
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         
-        if (line.trim().length === 0) {
-          // Empty line - add paragraph spacing
-          doc.moveDown(1);
-          continue;
-        }
-
-        // Parse markdown bold (**text**) and render appropriately
-        // Split by **text** pattern but keep the delimiters in the array
-        const parts = line.split(/(\*\*[^*]+\*\*)/g);
-        
-        let isFirstSegment = true;
-        
-        for (const part of parts) {
-          if (!part) continue;
+        // Detect end of header (when we hit "Dear")
+        if (line.trim().startsWith('Dear')) {
+          isHeaderSection = false;
           
-          if (part.startsWith('**') && part.endsWith('**')) {
-            // Bold text
-            const boldText = part.slice(2, -2);
-            doc.font('Times-Bold');
-            doc.text(boldText, {
-              width: width,
-              continued: !isFirstSegment,
-              lineGap: 0
-            });
-            doc.font('Times-Roman');
-            isFirstSegment = false;
-          } else {
-            // Regular text
-            doc.text(part, {
-              width: width,
-              continued: !isFirstSegment,
-              lineGap: 0
-            });
-            isFirstSegment = false;
+          // Render header with tight spacing
+          if (headerLines.length > 0) {
+            // First line is date
+            doc.text(headerLines[0], { lineGap: 0 });
+            doc.moveDown(0.5); // Small space after date
+            
+            // Name, phone, email with NO spacing between them
+            for (let j = 1; j < headerLines.length; j++) {
+              doc.text(headerLines[j], { lineGap: 0 });
+            }
+            doc.moveDown(0.5); // Small space after contact info
+            headerLines = [];
           }
         }
         
-        // Add line break after each line (except last line if it's empty)
-        if (i < lines.length - 1 || line.trim().length > 0) {
-          doc.moveDown(1);
+        // Accumulate header lines
+        if (isHeaderSection && line.trim().length > 0) {
+          headerLines.push(line.trim());
+          continue;
+        }
+        
+        // Skip empty lines in header
+        if (isHeaderSection && line.trim().length === 0) {
+          continue;
+        }
+        
+        // Handle empty lines (paragraph breaks)
+        if (line.trim().length === 0) {
+          doc.moveDown(0.5);
+          continue;
+        }
+
+        // Check if line starts with bullet
+        const bulletMatch = line.match(/^([*·])\s+(.*)$/);
+        
+        if (bulletMatch) {
+          const bulletContent = bulletMatch[2];
+          
+          // Parse bold formatting and create formatted text
+          const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
+          let formattedParts = [];
+          
+          for (const part of parts) {
+            if (!part) continue;
+            
+            if (part.startsWith('**') && part.endsWith('**')) {
+              formattedParts.push({
+                text: part.slice(2, -2),
+                bold: true
+              });
+            } else if (part.trim()) {
+              formattedParts.push({
+                text: part,
+                bold: false
+              });
+            }
+          }
+          
+          // Save X position and add indent
+          const originalX = doc.x;
+          doc.x = originalX + 24;
+          
+          // Render bullet manually with bold support
+          const startY = doc.y;
+          doc.text('•', originalX + 24, startY, {
+            continued: false,
+            width: 20
+          });
+          
+          // Render text parts
+          doc.x = originalX + 44; // Position after bullet
+          doc.y = startY;
+          
+          for (let i = 0; i < formattedParts.length; i++) {
+            const { text, bold } = formattedParts[i];
+            if (bold) {
+              doc.font('Times-Bold');
+            } else {
+              doc.font('Times-Roman');
+            }
+            
+            doc.text(text, {
+              continued: i < formattedParts.length - 1,
+              width: 612 - 144 - 44,
+              lineGap: 0
+            });
+          }
+          
+          // End line and reset
+          doc.font('Times-Roman');
+          doc.x = originalX;
+          doc.moveDown(0.5);
+          
+        } else {
+          // Regular line - handle bold formatting
+          const parts = line.split(/(\*\*[^*]+\*\*)/g);
+          let isFirst = true;
+          
+          for (const part of parts) {
+            if (!part) continue;
+            
+            if (part.startsWith('**') && part.endsWith('**')) {
+              const boldText = part.slice(2, -2);
+              doc.font('Times-Bold');
+              doc.text(boldText, { continued: !isFirst, lineGap: 0 });
+              doc.font('Times-Roman');
+            } else {
+              doc.text(part, { continued: !isFirst, lineGap: 0 });
+            }
+            isFirst = false;
+          }
+          
+          if (!isFirst) {
+            doc.text(''); // End line
+          }
+          doc.moveDown(0.5);
         }
       }
-    }
-
-    // Check if text contains markdown bold syntax
-    const hasBoldFormatting = coverLetter.includes('**');
-    
-    if (hasBoldFormatting) {
-      renderTextWithBold(doc, coverLetter, {
-        width: 612 - 144
-      });
     } else {
+      // Simple text without formatting
       doc.text(coverLetter, {
         align: "left",
         lineGap: 0,

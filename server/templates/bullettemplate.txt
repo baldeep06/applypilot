@@ -1,10 +1,22 @@
 SYSTEM INSTRUCTION: You are generating a cover letter with bullet points. Follow these rules EXACTLY.
 
 ===== ABSOLUTE RULES =====
-RULE 1: TOTAL LENGTH = 300-350 WORDS MAXIMUM
+RULE 1: TOTAL LENGTH = 250-300 WORDS MAXIMUM (must fit in 80% of one page)
 RULE 2: Use simple, concise language - sound HUMAN, not AI
 RULE 3: NEVER use em dashes (—)
 RULE 4: Simplify role names (e.g., "Summer Technology/Developer" becomes "Summer Developer")
+RULE 5: Each bullet point MUST be on ONE continuous line
+
+===== CRITICAL BULLET FORMATTING =====
+⚠️ MANDATORY: Each bullet MUST be formatted as ONE continuous line like this:
+*  **Company Name (Role):** Description text continues here without line breaks.
+
+DO NOT format like this (WRONG):
+*
+**Company Name (Role):** Description text here.
+
+DO NOT add line breaks between the asterisk and the company name.
+The asterisk, company name, and description must ALL be on the same line.
 
 ===== INPUT DATA =====
 
@@ -14,12 +26,12 @@ Job Posting:
 Resume (FOR REFERENCE):
 {{RESUME_TEXT}}
 
-===== OUTPUT FORMAT =====
+===== EXACT OUTPUT FORMAT =====
 
 {{TODAY_DATE}}
 
 [Full name from resume]
-[Phone from resume]  
+[Phone from resume]
 [Email from resume]
 
 Dear [Hiring manager name OR "Hiring Manager"],
@@ -40,69 +52,95 @@ Sincerely,
 ===== GENERATE_SENTENCE INSTRUCTIONS =====
 Generate ONE sentence that:
 - Starts with "I am eager to leverage"
-- Highlights 2-3 specific technical skills from the job description that match the resume
+- Highlights 2-3 specific technical skills from job description that match resume
 - Does NOT copy exact phrases from job description
 - Does NOT use placeholders like "[Programming Language]"
-- References general technical capabilities (e.g., "full-stack development experience")
-- Keeps it under 30 words
+- Keeps it under 25 words
 
-Example: "I am eager to leverage my experience with React, Python, and cloud infrastructure to contribute to your team's mission of building scalable web applications."
+Example: "I am eager to leverage my experience with React, Python, and cloud infrastructure to contribute to your mission."
 
 ===== BULLET_POINTS INSTRUCTIONS =====
-Extract THREE relevant experiences/projects from the resume that align with the job description.
+Extract THREE relevant experiences/projects from the resume that align with job description.
 
-Format EXACTLY like this:
-·        **[Company/Project Name] ([Role/Description]):** [2-3 sentences describing relevant work, technologies used, and impact. Focus on technical skills and achievements that match the job requirements.]
+⚠️ CRITICAL FORMAT - Each bullet MUST be ONE continuous line:
+*  **Company Name (Role):** Description here continues without line breaks.
 
 Requirements:
-- Use the bullet character: ·
-- Bold the text before the colon using **text**
-- Each bullet should be 2-3 sentences (40-60 words each)
-- Focus on experiences that match job requirements
-- Include specific technologies mentioned in both resume AND job description
-- Last bullet should typically be "Technical Projects" if available
-- NO generic placeholders - use actual project/company names from resume
-- Prioritize recent and relevant experiences
+- Start with asterisk and two spaces: "*  "
+- Bold the company/project name and role: **Company (Role):**
+- Then description text
+- ENTIRE bullet must be ONE line (no line breaks within the bullet)
+- Each bullet: MAX 50 words
+- Focus on experiences matching job requirements
+- Use technologies from BOTH resume AND job description
+- DO NOT copy resume text word-for-word - rephrase naturally
+- DO NOT include statistics or metrics (no percentages, no numbers)
+- Last bullet should be "Technical Projects:" (no specific project name in parentheses)
 
-Example format:
-·        **Ontario Power Generation (Software Engineer Intern):** I worked on enterprise web applications using C# and .NET, redesigned legacy systems for modern web deployment, and integrated identity and access control features. I also scripted automation tasks and optimized SQL queries.
+Example of CORRECT formatting (each is ONE line):
+*  **BTNX (Software Engineering Intern):** I built full-stack web applications with React and .NET, working extensively with SQL databases and backend APIs. I developed automation tools and worked on machine learning models for product diagnostics.
+*  **Government of Ontario (Software Developer Intern):** I created responsive web components and RESTful APIs using C# and .NET. I optimized database queries and improved system performance across high-traffic applications.
+*  **Technical Projects:** I developed machine learning models and data pipelines using Python, scikit-learn, and Flask. These projects showcase my ability to apply AI techniques to solve real-world problems.
 
-·        **Headstarter AI (Software Engineer Fellow):** I gained hands-on experience building AI-driven apps and APIs leveraging OpenAI, ReactJS, Pinecone, and LangChain. I was responsible for full-cycle development within a collaborative team, applying Agile practices.
-
-·        **Technical Projects:** I've designed and implemented end-to-end systems such as an AI-powered resume IDE, a document-querying RAG pipeline, and a robo-advising algorithm. These projects showcase my ability to work across the stack and blend creativity with technical expertise.
+WRONG (bullet character on separate line - DO NOT DO THIS):
+*
+**Company (Role):** Description here.
 
 ===== GLAZING_PARAGRAPH INSTRUCTIONS =====
-Write a 60-75 word paragraph that:
+Write a 55-60 word paragraph that:
 - Starts with "I am drawn by"
-- Connects personal values to company's mission/values from job description
+- Connects personal values to company's mission from job description
 - Does NOT copy company's values word-for-word
-- Paraphrases company goals and aligns with personal ambitions
-- Stays concise (2-3 sentences)
-- Does NOT describe company history or products
+- Paraphrases and aligns with personal goals
+- 2-3 sentences maximum
+- Does NOT describe company history
 
-===== SPACING =====
-- One blank line after contact info
-- One blank line after "Dear..."
-- One blank line between each paragraph
+===== SPACING - SINGLE BLANK LINES ONLY =====
+Use EXACTLY ONE blank line between sections:
+- One blank line after date
+- One blank line after email
+- One blank line after "Dear Hiring Manager,"
+- One blank line after opening paragraph
+- One blank line after "I've also developed..."
+- NO blank lines between bullet points
+- One blank line after bullet points
+- One blank line after glazing paragraph
 - One blank line before "Sincerely,"
-- NO blank lines within bullet points
 
-===== CRITICAL =====
-- Extract ACTUAL experiences from resume, not generic examples
-- Match bullet points to job requirements
-- Use bold formatting: **text**
-- Use bullet character: ·
-- Keep professional but human tone
+===== EXAMPLE OUTPUT STRUCTURE =====
+December 24, 2025
+
+Aadit Shah
+(647) 994-8661
+aadit.shah@uwaterloo.ca
+
+Dear Hiring Manager,
+
+I am excited about the opportunity to join the innovative team at Capital One as a Software Engineer Intern. I am eager to leverage my experience with Java, Python, and AWS to contribute to your mission.
+
+I've also developed invaluable practical skills through diverse work and project experience.
+
+*  **BTNX (Software Engineering Intern):** I built full-stack web applications with React and .NET, working with SQL databases and backend APIs. I developed automation tools and machine learning models for diagnostics.
+*  **Government of Ontario (Software Developer Intern):** I created responsive web components and RESTful APIs using C# and .NET. I optimized database performance across high-traffic public applications.
+*  **Technical Projects:** I developed machine learning pipelines and data analysis tools using Python and Flask. These projects demonstrate my ability to apply technical skills to complex challenges.
+
+I am drawn by Capital One's mission to innovate banking and make credit more accessible. The emphasis on teamwork and continuous learning resonates with my values, and I'm eager to contribute to a collaborative environment.
+
+Enclosed, please find my resume. Thank you for considering my application.
+
+Sincerely,
+Aadit Shah
 
 ===== FINAL CHECKPOINT =====
-Before outputting, COUNT and verify:
-□ Total is 300-350 words
-□ GENERATE_SENTENCE starts with "I am eager to leverage" and is under 30 words
-□ THREE bullet points formatted correctly with · and **bold**
-□ Each bullet is 40-60 words and includes actual company/project names from resume
-□ GLAZING_PARAGRAPH is 60-75 words and starts with "I am drawn by"
-□ NO em dashes (—) used anywhere
-□ Exactly ONE blank line between sections
-□ Simple, concise, conversational language
-□ Bullet points match job requirements and use real experiences from resume
-
+Before outputting, verify:
+□ Total is 250-300 words
+□ Opening sentence is under 25 words
+□ THREE bullet points, each starting with "*  " (asterisk + 2 spaces)
+□ Each bullet is ONE continuous line (no line breaks)
+□ Each bullet is MAX 50 words
+□ Bullets use **bold** for company/role
+□ Glazing paragraph is 55-60 words
+□ EXACTLY ONE blank line between sections
+□ NO statistics or metrics in bullets
+□ NO line breaks within bullets
+□ Uses "*" not "·" for bullets
