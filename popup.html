@@ -55,12 +55,14 @@
         flex: 1;
         border: 2px solid #e0e0e0;
         border-radius: 8px;
-        padding: 10px;
+        padding: 12px 8px 8px 8px;
         cursor: pointer;
         transition: all 0.2s;
         position: relative;
         background: #ffffff;
-        min-height: 100px;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
       }
       
       .template-card:hover {
@@ -87,36 +89,62 @@
         color: white;
         font-size: 12px;
         font-weight: bold;
+        font-family: Arial, sans-serif;
       }
       
       .template-card.selected .checkmark {
         display: flex;
       }
       
-      .template-preview {
-        font-size: 8px;
-        color: #888;
-        line-height: 1.3;
-        margin-top: 4px;
-        font-family: 'Courier New', monospace;
-      }
-      
-      .template-preview.paragraph {
-        text-align: left;
-      }
-      
-      .template-preview.short {
-        text-align: left;
-      }
-      
-      .template-preview.bullet {
-        text-align: left;
-      }
-      
-      .template-preview.bullet::before {
-        content: '* ';
-        color: #0066ff;
-      }
+   
+    
+      .template-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.template-outline {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px;
+}
+
+.outline-line {
+  height: 2px;
+  background: #d0d0d0;
+  margin: 2px 0;
+  border-radius: 1px;
+}
+
+.outline-line.short {
+  width: 30%;
+}
+
+.outline-gap {
+  height: 6px;
+}
+
+.outline-bullet {
+  height: 2px;
+  background: #d0d0d0;  /* ← Gray (matches other lines) */
+  margin: 2px 0 2px 8px;
+  border-radius: 1px;
+  position: relative;
+}
+
+.outline-bullet::before {
+  content: '•';
+  position: absolute;
+  left: -8px;
+  top: -5px;
+  color: #666;  /* ← Dark gray (matches text) */
+  font-size: 8px;
+}
       
       .generate-btn {
         width: 100%;
@@ -268,15 +296,57 @@
         <div class="template-cards">
           <div class="template-card selected" data-template="default">
             <div class="checkmark">✓</div>
-            <div class="template-preview paragraph">Dear Hiring Manager,<br><br>I am writing to express my interest in the position. Through my experience, I have developed strong skills in technology and collaboration. I am excited about the opportunity to contribute to your team.<br><br>In my previous role, I worked extensively with modern web technologies and cloud platforms. This experience has prepared me well for the challenges of this position.</div>
+            <div class="template-name">Standard</div>
+            <div class="template-outline">
+              <div class="outline-line short"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line short"></div>
+            </div>
           </div>
           <div class="template-card" data-template="short">
             <div class="checkmark">✓</div>
-            <div class="template-preview short">Dear Hiring Manager,<br><br>I am excited about this opportunity. My experience with React and Python aligns well with your requirements. I've built scalable applications that handle complex workflows.<br><br>I'm drawn to your mission of innovation and look forward to contributing to your team.</div>
+            <div class="template-name">Short</div>
+            <div class="template-outline">
+              <div class="outline-line short"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line short"></div>
+            </div>
           </div>
           <div class="template-card" data-template="bullet">
             <div class="checkmark">✓</div>
-            <div class="template-preview bullet">* Company (Role): I built full-stack applications with React and Node.js, focusing on scalable architecture.<br><br>* Company (Role): I developed RESTful APIs and optimized database queries for high-performance systems.<br><br>* Technical Projects: Machine learning models using Python and TensorFlow.</div>
+            <div class="template-name">Bullet</div>
+            <div class="template-outline">
+              <div class="outline-line short"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-bullet"></div>
+              <div class="outline-bullet"></div>
+              <div class="outline-bullet"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line"></div>
+              <div class="outline-line"></div>
+              <div class="outline-gap"></div>
+              <div class="outline-line short"></div>
+            </div>
           </div>
         </div>
       </div>
