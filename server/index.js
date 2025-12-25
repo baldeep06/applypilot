@@ -238,8 +238,9 @@ async function generateDOCXBuffer(coverLetter) {
     });
   };
   
-  // Helper to create paragraph with proper spacing (half line = ~6pt = 120 twips)
-  const createParagraph = (children, spacingAfter = 120, indent = null) => {
+  // Helper to create paragraph with standard line spacing
+  // Standard single line spacing for 11pt font ≈ 13.2pt (1.2x line height) = 264 twips
+  const createParagraph = (children, spacingAfter = 0, indent = null) => {
     const paraOptions = {
       children: children,
       spacing: { after: spacingAfter }
@@ -251,23 +252,39 @@ async function generateDOCXBuffer(coverLetter) {
   };
 
   if (hasBullets || hasBold) {
+    // First pass: find all bullet points to identify the last one
+    const bulletIndices = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim().match(/^[*·]\s+/)) {
+        bulletIndices.push(i);
+      }
+    }
+    const lastBulletIndex = bulletIndices.length > 0 ? bulletIndices[bulletIndices.length - 1] : -1;
+    
     // Process line by line with bullet and bold support (matching PDF logic)
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      const isLastBullet = (i === lastBulletIndex);
       
       // Detect end of header (when we hit "Dear")
       if (line.trim().startsWith('Dear')) {
         isHeaderSection = false;
         
-        // Render header with proper spacing (matching PDF: date with space after, contact info with NO spacing between)
+        // Render header with standard line spacing
         if (headerLines.length > 0) {
-          // First line is date - small space after (matching PDF moveDown(0.5))
+          // First line is date - add blank space after date
           paragraphs.push(createParagraph(
             [createTextRun(headerLines[0].trim())],
-            120 // moveDown(0.5) ≈ 6pt = 120 twips
+            0
+          ));
+          // Add blank line after date
+          paragraphs.push(createParagraph(
+            [createTextRun("")],
+            0
           ));
           
-          // Name, phone, email with NO spacing between them (matching PDF lineGap: 0)
+          // Name, phone, email with NO spacing between them
           for (let j = 1; j < headerLines.length; j++) {
             paragraphs.push(createParagraph(
               [createTextRun(headerLines[j].trim())],
@@ -275,10 +292,10 @@ async function generateDOCXBuffer(coverLetter) {
             ));
           }
           
-          // Small space after contact info (matching PDF moveDown(0.5))
+          // Standard line spacing after contact info (single line break)
           paragraphs.push(createParagraph(
             [createTextRun("")],
-            120 // moveDown(0.5) ≈ 6pt = 120 twips
+            0 // Standard single line spacing
           ));
           headerLines = [];
         }
@@ -296,9 +313,9 @@ async function generateDOCXBuffer(coverLetter) {
         continue;
       }
       
-      // Handle empty lines (paragraph breaks) - matching PDF moveDown(0.5)
+      // Handle empty lines (paragraph breaks) - standard single line spacing
       if (line.trim().length === 0) {
-        paragraphs.push(createParagraph([createTextRun("")], 120));
+        paragraphs.push(createParagraph([createTextRun("")], 0));
         continue;
       }
 
@@ -324,22 +341,23 @@ async function generateDOCXBuffer(coverLetter) {
         
         // Only add paragraph if there are text runs
         if (textRuns.length > 0) {
-          // Add bullet character and tab to properly space text at 44pt (matching PDF)
+          // Add bullet character and tab - tab will align all text lines at the same position
           textRuns.unshift(new Tab());
           textRuns.unshift(createTextRun("•"));
           
-          // Indent to match PDF: bullet at 24pt, text at 44pt (20pt further)
-          // Use left indent = 24pt (where bullet is), tab stop at 44pt from left margin
+          // Bullet indented once at 24pt, text indented twice at 44pt (20pt further)
+          // All text lines (including first line) align at the tab stop position - no hanging indent
+          // Tab stops in Word are absolute from left margin
           paragraphs.push(new Paragraph({
             children: textRuns,
-            spacing: { after: 120 }, // moveDown(0.5) after bullet
+            spacing: { after: isLastBullet ? 0 : 264 }, // Space between bullets, but not after last bullet
             indent: { 
-              left: 480   // 24pt = 480 twips (where bullet starts)
+              left: 480   // 24pt = 480 twips (bullet position - first indent from left margin)
             },
             tabStops: [
               {
                 type: TabStopType.LEFT,
-                position: 880 // 44pt = 880 twips from left margin (where text should start, matching PDF)
+                position: 880 // 44pt = 880 twips absolute from left margin (text position - second indent, all lines align here)
               }
             ]
           }));
@@ -361,7 +379,7 @@ async function generateDOCXBuffer(coverLetter) {
         
         // Only add paragraph if there are text runs
         if (textRuns.length > 0) {
-          paragraphs.push(createParagraph(textRuns, 120)); // moveDown(0.5) after regular lines
+          paragraphs.push(createParagraph(textRuns, 0)); // Standard line spacing
         }
       }
     }
@@ -378,12 +396,17 @@ async function generateDOCXBuffer(coverLetter) {
       if (line.trim().startsWith('Dear')) {
         simpleHeaderSection = false;
         
-        // Render header with proper spacing (matching PDF)
+        // Render header with standard line spacing
         if (simpleHeaderLines.length > 0) {
-          // First line is date - small space after
+          // First line is date - add blank space after date
           paragraphs.push(createParagraph(
             [createTextRun(simpleHeaderLines[0].trim())],
-            120
+            0
+          ));
+          // Add blank line after date
+          paragraphs.push(createParagraph(
+            [createTextRun("")],
+            0
           ));
           
           // Name, phone, email with NO spacing between them
@@ -394,10 +417,10 @@ async function generateDOCXBuffer(coverLetter) {
             ));
           }
           
-          // Small space after contact info
+          // Standard line spacing after contact info
           paragraphs.push(createParagraph(
             [createTextRun("")],
-            120
+            0
           ));
           simpleHeaderLines = [];
         }
@@ -414,11 +437,11 @@ async function generateDOCXBuffer(coverLetter) {
         continue;
       }
       
-      // Handle empty lines (paragraph breaks)
+      // Handle empty lines (paragraph breaks) - standard single line spacing
       if (line.trim().length === 0) {
-        paragraphs.push(createParagraph([createTextRun("")], 120));
+        paragraphs.push(createParagraph([createTextRun("")], 0));
       } else {
-        paragraphs.push(createParagraph([createTextRun(line.trim())], 120));
+        paragraphs.push(createParagraph([createTextRun(line.trim())], 0));
       }
     }
   }
