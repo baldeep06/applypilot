@@ -7,7 +7,7 @@ import pdfParse from "pdf-parse";
 import PDFDocument from "pdfkit";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from '@supabase/supabase-js';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Tab, TabStopType, TabStop } from "docx";
 
 dotenv.config();
 
@@ -223,108 +223,202 @@ async function generateDOCXBuffer(coverLetter) {
   const paragraphs = [];
   let isHeaderSection = true;
   let headerLines = [];
+  
+  // Check if text contains bullets or bold formatting (like PDF code does)
+  const hasBullets = coverLetter.match(/^[*·]\s+/m);
+  const hasBold = coverLetter.includes('**');
+  
+  // Helper to create TextRun with Times New Roman 11pt font
+  const createTextRun = (text, bold = false) => {
+    return new TextRun({
+      text: text,
+      font: "Times New Roman",
+      size: 22, // 11pt in half-points (11 * 2 = 22)
+      bold: bold
+    });
+  };
+  
+  // Helper to create paragraph with proper spacing (half line = ~6pt = 120 twips)
+  const createParagraph = (children, spacingAfter = 120, indent = null) => {
+    const paraOptions = {
+      children: children,
+      spacing: { after: spacingAfter }
+    };
+    if (indent) {
+      paraOptions.indent = indent;
+    }
+    return new Paragraph(paraOptions);
+  };
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    // Detect end of header (when we hit "Dear")
-    if (line.startsWith('Dear')) {
-      isHeaderSection = false;
+  if (hasBullets || hasBold) {
+    // Process line by line with bullet and bold support (matching PDF logic)
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
       
-      // Add header lines as separate paragraphs
-      if (headerLines.length > 0) {
-        paragraphs.push(new Paragraph({
-          children: [new TextRun(headerLines[0])],
-          spacing: { after: 120 }
-        }));
+      // Detect end of header (when we hit "Dear")
+      if (line.trim().startsWith('Dear')) {
+        isHeaderSection = false;
         
-        // Add contact info lines
-        for (let j = 1; j < headerLines.length; j++) {
+        // Render header with proper spacing (matching PDF: date with space after, contact info with NO spacing between)
+        if (headerLines.length > 0) {
+          // First line is date - small space after (matching PDF moveDown(0.5))
+          paragraphs.push(createParagraph(
+            [createTextRun(headerLines[0].trim())],
+            120 // moveDown(0.5) ≈ 6pt = 120 twips
+          ));
+          
+          // Name, phone, email with NO spacing between them (matching PDF lineGap: 0)
+          for (let j = 1; j < headerLines.length; j++) {
+            paragraphs.push(createParagraph(
+              [createTextRun(headerLines[j].trim())],
+              0 // NO spacing between contact info lines
+            ));
+          }
+          
+          // Small space after contact info (matching PDF moveDown(0.5))
+          paragraphs.push(createParagraph(
+            [createTextRun("")],
+            120 // moveDown(0.5) ≈ 6pt = 120 twips
+          ));
+          headerLines = [];
+        }
+        // Continue to process the "Dear" line below (don't skip it)
+      }
+      
+      // Accumulate header lines
+      if (isHeaderSection && line.trim().length > 0) {
+        headerLines.push(line.trim());
+        continue;
+      }
+      
+      // Skip empty lines in header
+      if (isHeaderSection && line.trim().length === 0) {
+        continue;
+      }
+      
+      // Handle empty lines (paragraph breaks) - matching PDF moveDown(0.5)
+      if (line.trim().length === 0) {
+        paragraphs.push(createParagraph([createTextRun("")], 120));
+        continue;
+      }
+
+      // Check if line starts with bullet
+      const bulletMatch = line.match(/^([*·])\s+(.*)$/);
+      
+      if (bulletMatch) {
+        const bulletContent = bulletMatch[2];
+        
+        // Parse bold formatting and create formatted text
+        const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
+        const textRuns = [];
+        
+        for (const part of parts) {
+          if (!part) continue;
+          
+          if (part.startsWith('**') && part.endsWith('**')) {
+            textRuns.push(createTextRun(part.slice(2, -2), true));
+          } else if (part.trim()) {
+            textRuns.push(createTextRun(part));
+          }
+        }
+        
+        // Only add paragraph if there are text runs
+        if (textRuns.length > 0) {
+          // Add bullet character and tab to properly space text at 44pt (matching PDF)
+          textRuns.unshift(new Tab());
+          textRuns.unshift(createTextRun("•"));
+          
+          // Indent to match PDF: bullet at 24pt, text at 44pt (20pt further)
+          // Use left indent = 24pt (where bullet is), tab stop at 44pt from left margin
           paragraphs.push(new Paragraph({
-            children: [new TextRun(headerLines[j])],
-            spacing: { after: 0 }
+            children: textRuns,
+            spacing: { after: 120 }, // moveDown(0.5) after bullet
+            indent: { 
+              left: 480   // 24pt = 480 twips (where bullet starts)
+            },
+            tabStops: [
+              {
+                type: TabStopType.LEFT,
+                position: 880 // 44pt = 880 twips from left margin (where text should start, matching PDF)
+              }
+            ]
           }));
         }
-        headerLines = [];
-        paragraphs.push(new Paragraph({ children: [new TextRun("")], spacing: { after: 240 } }));
+      } else {
+        // Regular line - handle bold formatting
+        const parts = line.split(/(\*\*[^*]+\*\*)/g);
+        const textRuns = [];
+        
+        for (const part of parts) {
+          if (!part) continue;
+          
+          if (part.startsWith('**') && part.endsWith('**')) {
+            textRuns.push(createTextRun(part.slice(2, -2), true));
+          } else {
+            textRuns.push(createTextRun(part));
+          }
+        }
+        
+        // Only add paragraph if there are text runs
+        if (textRuns.length > 0) {
+          paragraphs.push(createParagraph(textRuns, 120)); // moveDown(0.5) after regular lines
+        }
       }
     }
-
-    // Accumulate header lines
-    if (isHeaderSection && line.length > 0) {
-      headerLines.push(line);
-      continue;
-    }
-
-    // Skip empty lines in header
-    if (isHeaderSection && line.length === 0) {
-      continue;
-    }
-
-    // Handle empty lines (paragraph breaks)
-    if (line.length === 0) {
-      paragraphs.push(new Paragraph({ children: [new TextRun("")], spacing: { after: 240 } }));
-      continue;
-    }
-
-    // Check if line starts with bullet
-    const bulletMatch = line.match(/^[*·]\s+(.*)$/);
+  } else {
+    // Simple text without formatting - split by newlines and create paragraphs
+    // Still handle header spacing properly
+    let simpleHeaderSection = true;
+    let simpleHeaderLines = [];
     
-    if (bulletMatch) {
-      const bulletContent = bulletMatch[1];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
       
-      // Parse bold formatting
-      const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
-      const textRuns = [];
-      
-      for (const part of parts) {
-        if (!part) continue;
+      // Detect end of header (when we hit "Dear")
+      if (line.trim().startsWith('Dear')) {
+        simpleHeaderSection = false;
         
-        if (part.startsWith('**') && part.endsWith('**')) {
-          textRuns.push(new TextRun({
-            text: part.slice(2, -2),
-            bold: true
-          }));
-        } else {
-          textRuns.push(new TextRun({ text: part }));
+        // Render header with proper spacing (matching PDF)
+        if (simpleHeaderLines.length > 0) {
+          // First line is date - small space after
+          paragraphs.push(createParagraph(
+            [createTextRun(simpleHeaderLines[0].trim())],
+            120
+          ));
+          
+          // Name, phone, email with NO spacing between them
+          for (let j = 1; j < simpleHeaderLines.length; j++) {
+            paragraphs.push(createParagraph(
+              [createTextRun(simpleHeaderLines[j].trim())],
+              0 // NO spacing between contact info lines
+            ));
+          }
+          
+          // Small space after contact info
+          paragraphs.push(createParagraph(
+            [createTextRun("")],
+            120
+          ));
+          simpleHeaderLines = [];
         }
       }
       
-      // Only add paragraph if there are text runs
-      if (textRuns.length > 0) {
-        // Add bullet character as first text run
-        textRuns.unshift(new TextRun({ text: "• " }));
-        
-        paragraphs.push(new Paragraph({
-          children: textRuns,
-          indent: { left: 360 }, // 0.25 inch indent for bullets
-          spacing: { after: 120 }
-        }));
-      }
-    } else {
-      // Regular line - handle bold formatting
-      const parts = line.split(/(\*\*[^*]+\*\*)/g);
-      const textRuns = [];
-      
-      for (const part of parts) {
-        if (!part) continue;
-        
-        if (part.startsWith('**') && part.endsWith('**')) {
-          textRuns.push(new TextRun({
-            text: part.slice(2, -2),
-            bold: true
-          }));
-        } else {
-          textRuns.push(new TextRun({ text: part }));
-        }
+      // Accumulate header lines
+      if (simpleHeaderSection && line.trim().length > 0) {
+        simpleHeaderLines.push(line.trim());
+        continue;
       }
       
-      // Only add paragraph if there are text runs
-      if (textRuns.length > 0) {
-        paragraphs.push(new Paragraph({
-          children: textRuns,
-          spacing: { after: 240 }
-        }));
+      // Skip empty lines in header
+      if (simpleHeaderSection && line.trim().length === 0) {
+        continue;
+      }
+      
+      // Handle empty lines (paragraph breaks)
+      if (line.trim().length === 0) {
+        paragraphs.push(createParagraph([createTextRun("")], 120));
+      } else {
+        paragraphs.push(createParagraph([createTextRun(line.trim())], 120));
       }
     }
   }
