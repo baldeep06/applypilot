@@ -272,6 +272,51 @@
       #signInBtn:hover {
         background: #0052cc;
       }
+
+      .download-section {
+        margin-top: 16px;
+        padding: 16px;
+        background: #f5f5f5;
+        border-radius: 6px;
+        margin-bottom: 16px;
+      }
+
+      .download-label {
+        font-size: 13px;
+        color: #333;
+        margin-bottom: 12px;
+        font-weight: 500;
+      }
+
+      .download-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .download-btn {
+        flex: 1;
+        padding: 10px 16px;
+        background: #ffffff;
+        color: #0066ff;
+        border: 2px solid #0066ff;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .download-btn:hover {
+        background: #0066ff;
+        color: white;
+      }
+
+      .download-btn:disabled {
+        background: #e8e8e8;
+        color: #999;
+        border-color: #ccc;
+        cursor: not-allowed;
+      }
     </style>
   </head>
   <body>
@@ -352,6 +397,14 @@
       </div>
 
       <button id="generateBtn" class="generate-btn">Generate Cover Letter</button>
+
+      <div id="downloadSection" class="download-section" style="display: none;">
+        <div class="download-label">Download as:</div>
+        <div class="download-buttons">
+          <button id="downloadPdfBtn" class="download-btn">Download PDF</button>
+          <button id="downloadDocxBtn" class="download-btn">Download DOCX</button>
+        </div>
+      </div>
 
       <div class="resume-section">
         <div class="resume-label">Resume</div>

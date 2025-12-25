@@ -7,6 +7,11 @@ const userEmailEl = document.getElementById("userEmail");
 const resumeStatusEl = document.getElementById("resumeStatus");
 const signedOutView = document.getElementById("signedOutView");
 const signedInView = document.getElementById("signedInView");
+const downloadSection = document.getElementById("downloadSection");
+const downloadPdfBtn = document.getElementById("downloadPdfBtn");
+const downloadDocxBtn = document.getElementById("downloadDocxBtn");
+
+let currentCoverLetter = null;
 
 // Template selection
 let selectedTemplate = "default";
@@ -234,6 +239,10 @@ resumeInput.addEventListener("change", async () => {
 // Generate cover letter
 generateBtn.addEventListener("click", async () => {
   try {
+    // Hide download section and reset cover letter
+    downloadSection.style.display = "none";
+    currentCoverLetter = null;
+    
     setStatus("Reading job page...", "");
 
     const [tab] = await chrome.tabs.query({
@@ -245,6 +254,8 @@ generateBtn.addEventListener("click", async () => {
       setStatus("❌ No active tab found.", "error");
       return;
     }
+
+    generateBtn.disabled = true;
 
     chrome.scripting.executeScript(
       {
@@ -290,29 +301,97 @@ generateBtn.addEventListener("click", async () => {
             if (!response.ok) {
               const errText = await response.text();
               setStatus("❌ Error: " + errText, "error");
+              downloadSection.style.display = "none";
               return;
             }
             
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "cover-letter.pdf";
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            setStatus("✅ Cover letter downloaded!", "success");
+            const data = await response.json();
+            if (data.success && data.coverLetter) {
+              currentCoverLetter = data.coverLetter;
+              setStatus("✅ Generation complete!", "success");
+              downloadSection.style.display = "block";
+              generateBtn.disabled = false;
+            } else {
+              setStatus("❌ Error: Invalid response from server", "error");
+              downloadSection.style.display = "none";
+              generateBtn.disabled = false;
+            }
           });
           return;
         }
 
         if (!response.ok) {
           const errText = await response.text();
-          setStatus("❌ Error: " + errText);
+          setStatus("❌ Error: " + errText, "error");
+          downloadSection.style.display = "none";
+          generateBtn.disabled = false;
           return;
         }
 
+        const data = await response.json();
+        if (data.success && data.coverLetter) {
+          currentCoverLetter = data.coverLetter;
+          setStatus("✅ Generation complete!", "success");
+          downloadSection.style.display = "block";
+          generateBtn.disabled = false;
+        } else {
+          setStatus("❌ Error: Invalid response from server", "error");
+          downloadSection.style.display = "none";
+          generateBtn.disabled = false;
+        }
+      }
+    );
+  } catch (err) {
+    setStatus("❌ Error: " + err.message, "error");
+    downloadSection.style.display = "none";
+    generateBtn.disabled = false;
+  }
+});
+
+// Download PDF
+downloadPdfBtn.addEventListener("click", async () => {
+  if (!currentCoverLetter) {
+    setStatus("❌ No cover letter available. Please generate one first.", "error");
+    return;
+  }
+
+  try {
+    setStatus("Generating PDF...", "");
+    downloadPdfBtn.disabled = true;
+    downloadDocxBtn.disabled = true;
+
+    let token = await getAuthToken();
+    
+    let response = await fetch(`${API_URL}/generate-pdf`, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ coverLetter: currentCoverLetter })
+    });
+
+    // If token expired, refresh and retry once
+    if (response.status === 401) {
+      chrome.identity.removeCachedAuthToken({ token }, async () => {
+        token = await getAuthToken();
+        response = await fetch(`${API_URL}/generate-pdf`, {
+          method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ coverLetter: currentCoverLetter })
+        });
+        
+        if (!response.ok) {
+          const errText = await response.text();
+          setStatus("❌ Error: " + errText, "error");
+          downloadPdfBtn.disabled = false;
+          downloadDocxBtn.disabled = false;
+          return;
+        }
+        
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -322,12 +401,126 @@ generateBtn.addEventListener("click", async () => {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+        setStatus("✅ PDF downloaded!", "success");
+        downloadPdfBtn.disabled = false;
+        downloadDocxBtn.disabled = false;
+      });
+      return;
+    }
 
-        setStatus("✅ Cover letter downloaded!");
-      }
-    );
+    if (!response.ok) {
+      const errText = await response.text();
+      setStatus("❌ Error: " + errText, "error");
+      downloadPdfBtn.disabled = false;
+      downloadDocxBtn.disabled = false;
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "cover-letter.pdf";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    setStatus("✅ PDF downloaded!", "success");
+    downloadPdfBtn.disabled = false;
+    downloadDocxBtn.disabled = false;
   } catch (err) {
-    setStatus("❌ Error: " + err.message);
+    setStatus("❌ Error: " + err.message, "error");
+    downloadPdfBtn.disabled = false;
+    downloadDocxBtn.disabled = false;
+  }
+});
+
+// Download DOCX
+downloadDocxBtn.addEventListener("click", async () => {
+  if (!currentCoverLetter) {
+    setStatus("❌ No cover letter available. Please generate one first.", "error");
+    return;
+  }
+
+  try {
+    setStatus("Generating DOCX...", "");
+    downloadPdfBtn.disabled = true;
+    downloadDocxBtn.disabled = true;
+
+    let token = await getAuthToken();
+    
+    let response = await fetch(`${API_URL}/generate-docx`, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ coverLetter: currentCoverLetter })
+    });
+
+    // If token expired, refresh and retry once
+    if (response.status === 401) {
+      chrome.identity.removeCachedAuthToken({ token }, async () => {
+        token = await getAuthToken();
+        response = await fetch(`${API_URL}/generate-docx`, {
+          method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ coverLetter: currentCoverLetter })
+        });
+        
+        if (!response.ok) {
+          const errText = await response.text();
+          setStatus("❌ Error: " + errText, "error");
+          downloadPdfBtn.disabled = false;
+          downloadDocxBtn.disabled = false;
+          return;
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "cover-letter.docx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        setStatus("✅ DOCX downloaded!", "success");
+        downloadPdfBtn.disabled = false;
+        downloadDocxBtn.disabled = false;
+      });
+      return;
+    }
+
+    if (!response.ok) {
+      const errText = await response.text();
+      setStatus("❌ Error: " + errText, "error");
+      downloadPdfBtn.disabled = false;
+      downloadDocxBtn.disabled = false;
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "cover-letter.docx";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    setStatus("✅ DOCX downloaded!", "success");
+    downloadPdfBtn.disabled = false;
+    downloadDocxBtn.disabled = false;
+  } catch (err) {
+    setStatus("❌ Error: " + err.message, "error");
+    downloadPdfBtn.disabled = false;
+    downloadDocxBtn.disabled = false;
   }
 });
 
