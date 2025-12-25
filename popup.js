@@ -10,11 +10,17 @@ const signedInView = document.getElementById("signedInView");
 const downloadSection = document.getElementById("downloadSection");
 const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 const downloadDocxBtn = document.getElementById("downloadDocxBtn");
+const viewBtn = document.getElementById("viewBtn");
+const pdfModalOverlay = document.getElementById("pdfModalOverlay");
+const pdfViewer = document.getElementById("pdfViewer");
+const pdfModalClose = document.getElementById("pdfModalClose");
 
 let currentCoverLetter = null;
+let currentMetadata = null;
 
 // Template selection
 let selectedTemplate = "default";
+let lastGeneratedTemplate = null;
 const templateCards = document.querySelectorAll(".template-card");
 templateCards.forEach(card => {
   card.addEventListener("click", () => {
@@ -23,7 +29,15 @@ templateCards.forEach(card => {
     // Add selected class to clicked card
     card.classList.add("selected");
     // Update selected template
-    selectedTemplate = card.getAttribute("data-template");
+    const newTemplate = card.getAttribute("data-template");
+    selectedTemplate = newTemplate;
+    
+    // Reset button text if template changed
+    if (lastGeneratedTemplate !== null && lastGeneratedTemplate !== newTemplate) {
+      generateBtn.textContent = "Generate Cover Letter";
+    } else if (lastGeneratedTemplate === newTemplate) {
+      generateBtn.textContent = "Regenerate Cover Letter";
+    }
   });
 });
 
@@ -49,6 +63,25 @@ async function getAuthToken() {
 function setStatus(msg, type = "") {
   statusEl.textContent = msg;
   statusEl.className = type;
+}
+
+// Helper function to generate filename from metadata
+function generateFilename(extension = "pdf") {
+  if (currentMetadata && currentMetadata.candidateName && currentMetadata.company && currentMetadata.position) {
+    const name = currentMetadata.candidateName.replace(/[<>:"/\\|?*]/g, '').trim();
+    const company = currentMetadata.company.replace(/[<>:"/\\|?*]/g, '').trim();
+    const position = currentMetadata.position.replace(/[<>:"/\\|?*]/g, '').trim();
+    return `${name} - ${company} ${position}.${extension}`;
+  }
+  return `cover-letter.${extension}`;
+}
+
+// Update view button text with filename and "- Preview"
+function updateViewButton() {
+  const filename = generateFilename("pdf");
+  // Remove extension for display
+  const filenameWithoutExt = filename.replace(/\.pdf$/, '');
+  viewBtn.textContent = `${filenameWithoutExt} - Preview`;
 }
 
 function updateUI() {
@@ -241,7 +274,14 @@ generateBtn.addEventListener("click", async () => {
   try {
     // Hide download section and reset cover letter
     downloadSection.style.display = "none";
+    viewBtn.style.display = "none";
     currentCoverLetter = null;
+    currentMetadata = null;
+    
+    // Reset button text if template changed
+    if (lastGeneratedTemplate !== null && lastGeneratedTemplate !== selectedTemplate) {
+      generateBtn.textContent = "Generate Cover Letter";
+    }
     
     setStatus("Reading job page...", "");
 
@@ -302,18 +342,25 @@ generateBtn.addEventListener("click", async () => {
               const errText = await response.text();
               setStatus("❌ Error: " + errText, "error");
               downloadSection.style.display = "none";
+              viewBtn.style.display = "none";
               return;
             }
             
             const data = await response.json();
             if (data.success && data.coverLetter) {
               currentCoverLetter = data.coverLetter;
+              currentMetadata = data.metadata || null;
+              updateViewButton();
+              lastGeneratedTemplate = templateType;
+              generateBtn.textContent = "Regenerate Cover Letter";
               setStatus("✅ Generation complete!", "success");
               downloadSection.style.display = "block";
+              viewBtn.style.display = "block";
               generateBtn.disabled = false;
             } else {
               setStatus("❌ Error: Invalid response from server", "error");
               downloadSection.style.display = "none";
+              viewBtn.style.display = "none";
               generateBtn.disabled = false;
             }
           });
@@ -324,6 +371,7 @@ generateBtn.addEventListener("click", async () => {
           const errText = await response.text();
           setStatus("❌ Error: " + errText, "error");
           downloadSection.style.display = "none";
+          viewBtn.style.display = "none";
           generateBtn.disabled = false;
           return;
         }
@@ -331,12 +379,18 @@ generateBtn.addEventListener("click", async () => {
         const data = await response.json();
         if (data.success && data.coverLetter) {
           currentCoverLetter = data.coverLetter;
+          currentMetadata = data.metadata || null;
+          updateViewButton();
+          lastGeneratedTemplate = templateType;
+          generateBtn.textContent = "Regenerate Cover Letter";
           setStatus("✅ Generation complete!", "success");
           downloadSection.style.display = "block";
+          viewBtn.style.display = "block";
           generateBtn.disabled = false;
         } else {
           setStatus("❌ Error: Invalid response from server", "error");
           downloadSection.style.display = "none";
+          viewBtn.style.display = "none";
           generateBtn.disabled = false;
         }
       }
@@ -344,6 +398,7 @@ generateBtn.addEventListener("click", async () => {
   } catch (err) {
     setStatus("❌ Error: " + err.message, "error");
     downloadSection.style.display = "none";
+    viewBtn.style.display = "none";
     generateBtn.disabled = false;
   }
 });
@@ -368,7 +423,7 @@ downloadPdfBtn.addEventListener("click", async () => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ coverLetter: currentCoverLetter })
+      body: JSON.stringify({ coverLetter: currentCoverLetter, metadata: currentMetadata })
     });
 
     // If token expired, refresh and retry once
@@ -381,7 +436,7 @@ downloadPdfBtn.addEventListener("click", async () => {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ coverLetter: currentCoverLetter })
+          body: JSON.stringify({ coverLetter: currentCoverLetter, metadata: currentMetadata })
         });
         
         if (!response.ok) {
@@ -393,10 +448,19 @@ downloadPdfBtn.addEventListener("click", async () => {
         }
         
         const blob = await response.blob();
+        // Extract filename from Content-Disposition header
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = generateFilename("pdf");
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "cover-letter.pdf";
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -417,10 +481,19 @@ downloadPdfBtn.addEventListener("click", async () => {
     }
 
     const blob = await response.blob();
+    // Extract filename from Content-Disposition header
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = generateFilename("pdf");
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "cover-letter.pdf";
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -433,6 +506,111 @@ downloadPdfBtn.addEventListener("click", async () => {
     setStatus("❌ Error: " + err.message, "error");
     downloadPdfBtn.disabled = false;
     downloadDocxBtn.disabled = false;
+  }
+});
+
+// View PDF in modal
+viewBtn.addEventListener("click", async () => {
+  if (!currentCoverLetter) {
+    setStatus("❌ No cover letter available. Please generate one first.", "error");
+    return;
+  }
+
+  try {
+    setStatus("Loading PDF...", "");
+    viewBtn.disabled = true;
+
+    let token = await getAuthToken();
+    
+    let response = await fetch(`${API_URL}/generate-pdf`, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ coverLetter: currentCoverLetter, metadata: currentMetadata })
+    });
+
+    // If token expired, refresh and retry once
+    if (response.status === 401) {
+      chrome.identity.removeCachedAuthToken({ token }, async () => {
+        token = await getAuthToken();
+        response = await fetch(`${API_URL}/generate-pdf`, {
+          method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ coverLetter: currentCoverLetter, metadata: currentMetadata })
+        });
+        
+        if (!response.ok) {
+          const errText = await response.text();
+          setStatus("❌ Error: " + errText, "error");
+          viewBtn.disabled = false;
+          return;
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        pdfViewer.src = url;
+        pdfModalOverlay.classList.add("active");
+        setStatus("", "");
+        viewBtn.disabled = false;
+      });
+      return;
+    }
+
+    if (!response.ok) {
+      const errText = await response.text();
+      setStatus("❌ Error: " + errText, "error");
+      viewBtn.disabled = false;
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    pdfViewer.src = url;
+    pdfModalOverlay.classList.add("active");
+    setStatus("", "");
+    viewBtn.disabled = false;
+  } catch (err) {
+    setStatus("❌ Error: " + err.message, "error");
+    viewBtn.disabled = false;
+  }
+});
+
+// Close PDF modal
+pdfModalClose.addEventListener("click", () => {
+  pdfModalOverlay.classList.remove("active");
+  // Clean up the object URL to free memory
+  if (pdfViewer.src && pdfViewer.src.startsWith("blob:")) {
+    window.URL.revokeObjectURL(pdfViewer.src);
+    pdfViewer.src = "";
+  }
+});
+
+// Close modal when clicking outside the container
+pdfModalOverlay.addEventListener("click", (e) => {
+  if (e.target === pdfModalOverlay) {
+    pdfModalOverlay.classList.remove("active");
+    // Clean up the object URL to free memory
+    if (pdfViewer.src && pdfViewer.src.startsWith("blob:")) {
+      window.URL.revokeObjectURL(pdfViewer.src);
+      pdfViewer.src = "";
+    }
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && pdfModalOverlay.classList.contains("active")) {
+    pdfModalOverlay.classList.remove("active");
+    // Clean up the object URL to free memory
+    if (pdfViewer.src && pdfViewer.src.startsWith("blob:")) {
+      window.URL.revokeObjectURL(pdfViewer.src);
+      pdfViewer.src = "";
+    }
   }
 });
 
@@ -456,7 +634,7 @@ downloadDocxBtn.addEventListener("click", async () => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ coverLetter: currentCoverLetter })
+      body: JSON.stringify({ coverLetter: currentCoverLetter, metadata: currentMetadata })
     });
 
     // If token expired, refresh and retry once
@@ -469,7 +647,7 @@ downloadDocxBtn.addEventListener("click", async () => {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ coverLetter: currentCoverLetter })
+          body: JSON.stringify({ coverLetter: currentCoverLetter, metadata: currentMetadata })
         });
         
         if (!response.ok) {
@@ -481,10 +659,19 @@ downloadDocxBtn.addEventListener("click", async () => {
         }
         
         const blob = await response.blob();
+        // Extract filename from Content-Disposition header
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = generateFilename("docx");
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "cover-letter.docx";
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -505,10 +692,19 @@ downloadDocxBtn.addEventListener("click", async () => {
     }
 
     const blob = await response.blob();
+    // Extract filename from Content-Disposition header
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = generateFilename("docx");
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "cover-letter.docx";
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
