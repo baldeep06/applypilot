@@ -3,71 +3,293 @@
   <head>
     <meta charset="utf-8" />
     <style>
-      body {
-        width: 320px;
-        font-family: Arial, sans-serif;
-        padding: 12px;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      button {
-        width: 100%;
+      
+      body {
+        width: 400px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        background: #ffffff;
+        padding: 20px;
+        color: #1a1a1a;
+      }
+      
+      .header {
+        margin-bottom: 24px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+      }
+      
+      .subtitle {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 16px;
+      }
+      
+      .template-selection {
+        margin-bottom: 20px;
+      }
+      
+      .template-label {
+        font-size: 13px;
+        color: #333;
+        margin-bottom: 12px;
+        font-weight: 500;
+      }
+      
+      .template-cards {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      
+      .template-card {
+        flex: 1;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
         padding: 10px;
-        margin-top: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        background: #ffffff;
+        min-height: 100px;
+      }
+      
+      .template-card:hover {
+        border-color: #0066ff;
+        box-shadow: 0 2px 8px rgba(0, 102, 255, 0.1);
+      }
+      
+      .template-card.selected {
+        border-color: #0066ff;
+        background: #f0f6ff;
+      }
+      
+      .checkmark {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #0066ff;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      
+      .template-card.selected .checkmark {
+        display: flex;
+      }
+      
+      .template-preview {
+        font-size: 8px;
+        color: #888;
+        line-height: 1.3;
+        margin-top: 4px;
+        font-family: 'Courier New', monospace;
+      }
+      
+      .template-preview.paragraph {
+        text-align: left;
+      }
+      
+      .template-preview.short {
+        text-align: left;
+      }
+      
+      .template-preview.bullet {
+        text-align: left;
+      }
+      
+      .template-preview.bullet::before {
+        content: '* ';
+        color: #0066ff;
+      }
+      
+      .generate-btn {
+        width: 100%;
+        padding: 12px 24px;
+        background: #0066ff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-bottom: 12px;
+      }
+      
+      .generate-btn:hover {
+        background: #0052cc;
+      }
+      
+      .generate-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      
+      .user-info {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: #666;
+      }
+      
+      .user-info strong {
+        color: #1a1a1a;
+      }
+      
+      .resume-section {
+        margin-bottom: 16px;
+      }
+      
+      .resume-label {
+        font-size: 13px;
+        color: #333;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+      
+      #resumeStatus {
+        font-size: 12px;
+        margin-bottom: 8px;
+        min-height: 16px;
+      }
+      
+      #resumeStatus.success {
+        color: #00a651;
+      }
+      
+      #resumeStatus.warning {
+        color: #ff9500;
+      }
+      
+      input[type="file"] {
+        width: 100%;
+        font-size: 12px;
+        padding: 6px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
         cursor: pointer;
       }
-      #status {
-        margin-top: 10px;
-        font-size: 12px;
-        color: #444;
-        white-space: pre-wrap;
-      }
-      input {
+      
+      #signOutBtn {
         width: 100%;
-        margin-top: 8px;
-      }
-      .user-info {
-        background: #f0f0f0;
         padding: 8px;
-        border-radius: 4px;
-        margin-bottom: 10px;
+        background: #f5f5f5;
+        color: #666;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
         font-size: 12px;
+        cursor: pointer;
+        transition: background 0.2s;
       }
+      
+      #signOutBtn:hover {
+        background: #e8e8e8;
+      }
+      
+      #status {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #666;
+        white-space: pre-wrap;
+        min-height: 16px;
+      }
+      
+      #status.success {
+        color: #00a651;
+      }
+      
+      #status.error {
+        color: #ff3b30;
+      }
+      
       .signed-out {
         display: none;
       }
+      
       .signed-in {
         display: none;
+      }
+      
+      #signInBtn {
+        width: 100%;
+        padding: 12px 24px;
+        background: #0066ff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      
+      #signInBtn:hover {
+        background: #0052cc;
       }
     </style>
   </head>
   <body>
-    <h3>Cover Letter Generator</h3>
+    <div class="header">
+      <h1>Apply Pilot</h1>
+    </div>
 
     <!-- Signed Out View -->
     <div id="signedOutView" class="signed-out">
-      <p>Sign in to save your resume and generate cover letters</p>
+      <p style="margin-bottom: 16px; color: #666; font-size: 14px;">Sign in to save your resume and generate cover letters</p>
       <button id="signInBtn">Sign In with Google</button>
     </div>
 
     <!-- Signed In View -->
     <div id="signedInView" class="signed-in">
       <div class="user-info">
-        <div>Signed in as:</div>
-        <div id="userEmail" style="font-weight: bold;"></div>
+        <div>Signed in as: <strong id="userEmail"></strong></div>
       </div>
 
-      <label>Template:</label>
-      <select id="templateSelect" style="width: 100%; margin-top: 8px; padding: 8px;">
-        <option value="default">Standard Template</option>
-        <option value="short">Short Template</option>
-        <option value="bullet">Bullet Point Template</option>
-      </select>
+      <div class="template-selection">
+        <div class="template-label">Choose your template</div>
+        <div class="template-cards">
+          <div class="template-card selected" data-template="default">
+            <div class="checkmark">✓</div>
+            <div class="template-preview paragraph">Dear Hiring Manager,<br><br>I am writing to express my interest in the position. Through my experience, I have developed strong skills in technology and collaboration. I am excited about the opportunity to contribute to your team.<br><br>In my previous role, I worked extensively with modern web technologies and cloud platforms. This experience has prepared me well for the challenges of this position.</div>
+          </div>
+          <div class="template-card" data-template="short">
+            <div class="checkmark">✓</div>
+            <div class="template-preview short">Dear Hiring Manager,<br><br>I am excited about this opportunity. My experience with React and Python aligns well with your requirements. I've built scalable applications that handle complex workflows.<br><br>I'm drawn to your mission of innovation and look forward to contributing to your team.</div>
+          </div>
+          <div class="template-card" data-template="bullet">
+            <div class="checkmark">✓</div>
+            <div class="template-preview bullet">* Company (Role): I built full-stack applications with React and Node.js, focusing on scalable architecture.<br><br>* Company (Role): I developed RESTful APIs and optimized database queries for high-performance systems.<br><br>* Technical Projects: Machine learning models using Python and TensorFlow.</div>
+          </div>
+        </div>
+      </div>
 
-      <label style="margin-top: 12px; display: block;">Resume:</label>
-      <div id="resumeStatus" style="margin-top: 5px; font-size: 12px;"></div>
-      <input type="file" id="resumeInput" accept=".pdf" />
+      <button id="generateBtn" class="generate-btn">Generate Cover Letter</button>
 
-      <button id="generateBtn">Generate Cover Letter</button>
-      <button id="signOutBtn" style="background: #ddd; color: #333;">Sign Out</button>
+      <div class="resume-section">
+        <div class="resume-label">Resume</div>
+        <div id="resumeStatus"></div>
+        <input type="file" id="resumeInput" accept=".pdf" />
+      </div>
+
+      <button id="signOutBtn">Sign Out</button>
     </div>
 
     <div id="status"></div>

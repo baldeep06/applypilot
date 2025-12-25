@@ -3,11 +3,24 @@ const signOutBtn = document.getElementById("signOutBtn");
 const generateBtn = document.getElementById("generateBtn");
 const statusEl = document.getElementById("status");
 const resumeInput = document.getElementById("resumeInput");
-const templateSelect = document.getElementById("templateSelect");
 const userEmailEl = document.getElementById("userEmail");
 const resumeStatusEl = document.getElementById("resumeStatus");
 const signedOutView = document.getElementById("signedOutView");
 const signedInView = document.getElementById("signedInView");
+
+// Template selection
+let selectedTemplate = "default";
+const templateCards = document.querySelectorAll(".template-card");
+templateCards.forEach(card => {
+  card.addEventListener("click", () => {
+    // Remove selected class from all cards
+    templateCards.forEach(c => c.classList.remove("selected"));
+    // Add selected class to clicked card
+    card.classList.add("selected");
+    // Update selected template
+    selectedTemplate = card.getAttribute("data-template");
+  });
+});
 
 const API_URL = "http://localhost:3000";
 
@@ -28,8 +41,9 @@ async function getAuthToken() {
   });
 }
 
-function setStatus(msg) {
+function setStatus(msg, type = "") {
   statusEl.textContent = msg;
+  statusEl.className = type;
 }
 
 function updateUI() {
@@ -68,10 +82,10 @@ async function checkResumeStatus() {
           const retryData = await retryResponse.json();
           if (retryData.hasResume) {
             resumeStatusEl.textContent = `✅ Resume saved (${retryData.filename})`;
-            resumeStatusEl.style.color = "green";
+            resumeStatusEl.className = "success";
           } else {
             resumeStatusEl.textContent = "⚠️ No resume saved - upload one below";
-            resumeStatusEl.style.color = "orange";
+            resumeStatusEl.className = "warning";
           }
         } catch (retryErr) {
           console.error("Error retrying resume status check:", retryErr);
@@ -83,10 +97,10 @@ async function checkResumeStatus() {
     const data = await response.json();
     if (data.hasResume) {
       resumeStatusEl.textContent = `✅ Resume saved (${data.filename})`;
-      resumeStatusEl.style.color = "green";
+      resumeStatusEl.className = "success";
     } else {
       resumeStatusEl.textContent = "⚠️ No resume saved - upload one below";
-      resumeStatusEl.style.color = "orange";
+      resumeStatusEl.className = "warning";
     }
   } catch (err) {
     console.error("Error checking resume status:", err);
@@ -99,11 +113,11 @@ signInBtn.addEventListener("click", () => {
     if (chrome.runtime.lastError) {
       const errorMsg = chrome.runtime.lastError.message || "Unknown error";
       console.error("Auth error:", errorMsg);
-      setStatus(`❌ Sign in failed: ${errorMsg}`);
+      setStatus(`❌ Sign in failed: ${errorMsg}`, "error");
       return;
     }
     if (!token) {
-      setStatus("❌ Sign in failed: No token received");
+      setStatus("❌ Sign in failed: No token received", "error");
       return;
     }
 
@@ -121,7 +135,7 @@ signInBtn.addEventListener("click", () => {
     // Save to chrome storage
     chrome.storage.local.set({ user: currentUser });
     updateUI();
-    setStatus("✅ Signed in successfully!");
+    setStatus("✅ Signed in successfully!", "success");
   });
 });
 
@@ -133,7 +147,7 @@ signOutBtn.addEventListener("click", () => {
         chrome.storage.local.remove("user");
         currentUser = null;
         updateUI();
-        setStatus("Signed out");
+        setStatus("Signed out", "");
       });
     }
   });
@@ -148,7 +162,7 @@ resumeInput.addEventListener("change", async () => {
   formData.append("resume", file);
 
   try {
-    setStatus("Uploading resume...");
+    setStatus("Uploading resume...", "");
     
     // Get fresh token
     let token = await getAuthToken();
@@ -175,7 +189,7 @@ resumeInput.addEventListener("change", async () => {
         
         if (response.ok) {
           const data = await response.json();
-          setStatus("✅ Resume uploaded and saved!");
+          setStatus("✅ Resume uploaded and saved!", "success");
           checkResumeStatus();
         } else {
           let errorMsg = "Failed to upload resume";
@@ -186,7 +200,7 @@ resumeInput.addEventListener("change", async () => {
             errorMsg = `HTTP ${response.status}: ${response.statusText}`;
           }
           console.error("Upload error:", errorMsg, response.status);
-          setStatus(`❌ ${errorMsg}`);
+          setStatus(`❌ ${errorMsg}`, "error");
         }
       });
       return;
@@ -210,9 +224,9 @@ resumeInput.addEventListener("change", async () => {
   } catch (err) {
     console.error("Upload error:", err);
     if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-      setStatus(`❌ Cannot connect to server. Is it running on ${API_URL}?`);
+      setStatus(`❌ Cannot connect to server. Is it running on ${API_URL}?`, "error");
     } else {
-      setStatus(`❌ Error: ${err.message}`);
+      setStatus(`❌ Error: ${err.message}`, "error");
     }
   }
 });
@@ -220,7 +234,7 @@ resumeInput.addEventListener("change", async () => {
 // Generate cover letter
 generateBtn.addEventListener("click", async () => {
   try {
-    setStatus("Reading job page...");
+    setStatus("Reading job page...", "");
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -228,7 +242,7 @@ generateBtn.addEventListener("click", async () => {
     });
 
     if (!tab?.id) {
-      setStatus("❌ No active tab found.");
+      setStatus("❌ No active tab found.", "error");
       return;
     }
 
@@ -240,13 +254,13 @@ generateBtn.addEventListener("click", async () => {
       async (results) => {
         const jobText = results?.[0]?.result.slice(0, 4000);
         if (!jobText) {
-          setStatus("❌ Could not extract job text.");
+          setStatus("❌ Could not extract job text.", "error");
           return;
         }
 
-        setStatus("Generating cover letter...");
+        setStatus("Generating cover letter...", "");
 
-        const templateType = templateSelect.value || "default";
+        const templateType = selectedTemplate || "default";
 
         // Get fresh token
         let token = await getAuthToken();
@@ -275,7 +289,7 @@ generateBtn.addEventListener("click", async () => {
             
             if (!response.ok) {
               const errText = await response.text();
-              setStatus("❌ Error: " + errText);
+              setStatus("❌ Error: " + errText, "error");
               return;
             }
             
@@ -288,7 +302,7 @@ generateBtn.addEventListener("click", async () => {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            setStatus("✅ Cover letter downloaded!");
+            setStatus("✅ Cover letter downloaded!", "success");
           });
           return;
         }
