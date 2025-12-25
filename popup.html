@@ -316,6 +316,137 @@
         border-color: #ccc;
         cursor: not-allowed;
       }
+
+      .view-btn {
+        width: 100%;
+        padding: 10px 16px;
+        background: #ffffff;
+        color: #0066ff;
+        border: 2px solid #0066ff;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 12px;
+      }
+
+      .view-btn:hover {
+        background: #0066ff;
+        color: white;
+      }
+
+      .view-btn:disabled {
+        background: #e8e8e8;
+        color: #999;
+        border-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      /* PDF Viewer Modal */
+      .pdf-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease-in;
+      }
+
+      .pdf-modal-overlay.active {
+        display: flex;
+      }
+
+      .pdf-modal-container {
+        position: relative;
+        width: 85vw;
+        max-width: 700px;
+        height: 80vh;
+        max-height: 850px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        animation: scaleIn 0.2s ease-out;
+      }
+
+      .pdf-modal-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f8f8;
+        border-radius: 12px 12px 0 0;
+      }
+
+      .pdf-modal-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .pdf-modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #666;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s;
+      }
+
+      .pdf-modal-close:hover {
+        background: #e8e8e8;
+        color: #1a1a1a;
+      }
+
+      .pdf-modal-body {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #525252;
+      }
+
+      .pdf-modal-body iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes scaleIn {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
     </style>
   </head>
   <body>
@@ -395,7 +526,9 @@
         </div>
       </div>
 
-      <button id="generateBtn" class="generate-btn">Preview Cover Letter</button>
+      <button id="generateBtn" class="generate-btn">Generate Cover Letter</button>
+
+      <button id="viewBtn" class="view-btn" style="display: none;">View</button>
 
       <div id="downloadSection" class="download-section" style="display: none;">
         <div class="download-label">Download as:</div>
@@ -415,6 +548,19 @@
     </div>
 
     <div id="status"></div>
+
+    <!-- PDF Viewer Modal -->
+    <div id="pdfModalOverlay" class="pdf-modal-overlay">
+      <div class="pdf-modal-container">
+        <div class="pdf-modal-header">
+          <div class="pdf-modal-title">Cover Letter Preview</div>
+          <button class="pdf-modal-close" id="pdfModalClose">×</button>
+        </div>
+        <div class="pdf-modal-body">
+          <iframe id="pdfViewer" src=""></iframe>
+        </div>
+      </div>
+    </div>
 
     <script src="popup.js"></script>
   </body>
