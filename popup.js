@@ -270,7 +270,7 @@ resumeInput.addEventListener("change", async () => {
   formData.append("resume", file);
 
   try {
-    setStatus("Uploading resume...", "");
+    setStatus("", "");
     
     // Get fresh token
     let token = await getAuthToken();
@@ -476,8 +476,8 @@ downloadPdfBtn.addEventListener("click", async () => {
   }
 
   try {
+    setStatus("", "");
     downloadPdfBtn.disabled = true;
-    downloadDocxBtn.disabled = true;
 
     let token = await getAuthToken();
     
@@ -507,7 +507,6 @@ downloadPdfBtn.addEventListener("click", async () => {
           const errText = await response.text();
           setStatus("❌ Error: " + errText, "error");
           downloadPdfBtn.disabled = false;
-          downloadDocxBtn.disabled = false;
           return;
         }
         
@@ -531,7 +530,6 @@ downloadPdfBtn.addEventListener("click", async () => {
         document.body.removeChild(a);
         setStatus("", "");
         downloadPdfBtn.disabled = false;
-        downloadDocxBtn.disabled = false;
       });
       return;
     }
@@ -540,7 +538,6 @@ downloadPdfBtn.addEventListener("click", async () => {
       const errText = await response.text();
       setStatus("❌ Error: " + errText, "error");
       downloadPdfBtn.disabled = false;
-      downloadDocxBtn.disabled = false;
       return;
     }
 
@@ -565,11 +562,9 @@ downloadPdfBtn.addEventListener("click", async () => {
 
     setStatus("", "");
     downloadPdfBtn.disabled = false;
-    downloadDocxBtn.disabled = false;
   } catch (err) {
     setStatus("❌ Error: " + err.message, "error");
     downloadPdfBtn.disabled = false;
-    downloadDocxBtn.disabled = false;
   }
 });
 
@@ -686,7 +681,7 @@ downloadDocxBtn.addEventListener("click", async () => {
   }
 
   try {
-    downloadPdfBtn.disabled = true;
+    setStatus("", "");
     downloadDocxBtn.disabled = true;
 
     let token = await getAuthToken();
@@ -716,7 +711,6 @@ downloadDocxBtn.addEventListener("click", async () => {
         if (!response.ok) {
           const errText = await response.text();
           setStatus("❌ Error: " + errText, "error");
-          downloadPdfBtn.disabled = false;
           downloadDocxBtn.disabled = false;
           return;
         }
@@ -740,7 +734,6 @@ downloadDocxBtn.addEventListener("click", async () => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
         setStatus("", "");
-        downloadPdfBtn.disabled = false;
         downloadDocxBtn.disabled = false;
       });
       return;
@@ -749,7 +742,6 @@ downloadDocxBtn.addEventListener("click", async () => {
     if (!response.ok) {
       const errText = await response.text();
       setStatus("❌ Error: " + errText, "error");
-      downloadPdfBtn.disabled = false;
       downloadDocxBtn.disabled = false;
       return;
     }
@@ -774,11 +766,9 @@ downloadDocxBtn.addEventListener("click", async () => {
     document.body.removeChild(a);
 
     setStatus("", "");
-    downloadPdfBtn.disabled = false;
     downloadDocxBtn.disabled = false;
   } catch (err) {
     setStatus("❌ Error: " + err.message, "error");
-    downloadPdfBtn.disabled = false;
     downloadDocxBtn.disabled = false;
   }
 });
