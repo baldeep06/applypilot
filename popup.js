@@ -3,11 +3,12 @@ const signOutBtn = document.getElementById("signOutBtn");
 const generateBtn = document.getElementById("generateBtn");
 const statusEl = document.getElementById("status");
 const resumeInput = document.getElementById("resumeInput");
+const resumeFileBtn = document.getElementById("resumeFileBtn");
+const resumeFileName = document.getElementById("resumeFileName");
 const userEmailEl = document.getElementById("userEmail");
-const resumeStatusEl = document.getElementById("resumeStatus");
 const signedOutView = document.getElementById("signedOutView");
 const signedInView = document.getElementById("signedInView");
-const downloadSection = document.getElementById("downloadSection");
+const downloadSectionWrapper = document.getElementById("downloadSectionWrapper");
 const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 const downloadDocxBtn = document.getElementById("downloadDocxBtn");
 const viewBtn = document.getElementById("viewBtn");
@@ -17,6 +18,7 @@ const pdfModalClose = document.getElementById("pdfModalClose");
 
 let currentCoverLetter = null;
 let currentMetadata = null;
+let savedButtonText = "Generate"; // Store the button text to restore after loading
 
 // Template selection
 let selectedTemplate = "default";
@@ -34,9 +36,13 @@ templateCards.forEach(card => {
     
     // Reset button text if template changed
     if (lastGeneratedTemplate !== null && lastGeneratedTemplate !== newTemplate) {
-      generateBtn.textContent = "Generate Cover Letter";
+      setButtonText("Generate");
+      // Hide preview and download buttons when switching to a different template
+      downloadSectionWrapper.style.display = "none";
     } else if (lastGeneratedTemplate === newTemplate) {
-      generateBtn.textContent = "Regenerate Cover Letter";
+      setButtonText("Regenerate");
+      // Show preview and download buttons when switching back to the generated template
+      downloadSectionWrapper.style.display = "block";
     }
   });
 });
@@ -65,6 +71,39 @@ function setStatus(msg, type = "") {
   statusEl.className = type;
 }
 
+// Helper functions to manage button loading state
+function setButtonLoading(isLoading) {
+  const buttonTextEl = generateBtn.querySelector('.button-text');
+  if (isLoading) {
+    // Save current text and set to "Generating"
+    if (buttonTextEl) {
+      savedButtonText = buttonTextEl.textContent;
+      buttonTextEl.textContent = "Generating";
+    }
+    generateBtn.classList.add('loading');
+    generateBtn.disabled = true;
+  } else {
+    // Restore saved text
+    if (buttonTextEl) {
+      buttonTextEl.textContent = savedButtonText;
+    }
+    generateBtn.classList.remove('loading');
+    generateBtn.disabled = false;
+  }
+}
+
+function setButtonText(text) {
+  const buttonText = generateBtn.querySelector('.button-text');
+  if (buttonText) {
+    buttonText.textContent = text;
+    savedButtonText = text; // Update saved text
+  } else {
+    // Fallback for compatibility
+    generateBtn.textContent = text;
+    savedButtonText = text;
+  }
+}
+
 // Helper function to generate filename from metadata
 function generateFilename(extension = "pdf") {
   if (currentMetadata && currentMetadata.candidateName && currentMetadata.company && currentMetadata.position) {
@@ -81,13 +120,13 @@ function updateViewButton() {
   const filename = generateFilename("pdf");
   // Remove extension for display
   const filenameWithoutExt = filename.replace(/\.pdf$/, '');
-  viewBtn.textContent = `${filenameWithoutExt} - Preview`;
+  viewBtn.textContent = "Preview";
 }
 
 function updateUI() {
   if (currentUser) {
     signedOutView.style.display = "none";
-    signedInView.style.display = "block";
+    signedInView.style.display = "flex";
     userEmailEl.textContent = currentUser.email;
     checkResumeStatus();
   } else {
@@ -119,11 +158,11 @@ async function checkResumeStatus() {
           });
           const retryData = await retryResponse.json();
           if (retryData.hasResume) {
-            resumeStatusEl.textContent = `✅ Resume saved (${retryData.filename})`;
-            resumeStatusEl.className = "success";
+            resumeFileBtn.textContent = "Update file";
+            resumeFileName.textContent = retryData.filename;
           } else {
-            resumeStatusEl.textContent = "⚠️ No resume saved - upload one below";
-            resumeStatusEl.className = "warning";
+            resumeFileBtn.textContent = "Choose File";
+            resumeFileName.textContent = "No file chosen";
           }
         } catch (retryErr) {
           console.error("Error retrying resume status check:", retryErr);
@@ -134,16 +173,21 @@ async function checkResumeStatus() {
     
     const data = await response.json();
     if (data.hasResume) {
-      resumeStatusEl.textContent = `✅ Resume saved (${data.filename})`;
-      resumeStatusEl.className = "success";
+      resumeFileBtn.textContent = "Update file";
+      resumeFileName.textContent = data.filename;
     } else {
-      resumeStatusEl.textContent = "⚠️ No resume saved - upload one below";
-      resumeStatusEl.className = "warning";
+      resumeFileBtn.textContent = "Choose File";
+      resumeFileName.textContent = "No file chosen";
     }
   } catch (err) {
     console.error("Error checking resume status:", err);
   }
 }
+
+// Make custom button trigger file input
+resumeFileBtn.addEventListener("click", () => {
+  resumeInput.click();
+});
 
 // Sign in with Google
 signInBtn.addEventListener("click", () => {
@@ -228,7 +272,9 @@ resumeInput.addEventListener("change", async () => {
         if (response.ok) {
           const data = await response.json();
           setStatus("✅ Resume uploaded and saved!", "success");
-          checkResumeStatus();
+          // Update UI immediately
+          resumeFileBtn.textContent = "Update file";
+          resumeFileName.textContent = data.filename || "resume.pdf";
         } else {
           let errorMsg = "Failed to upload resume";
           try {
@@ -246,8 +292,10 @@ resumeInput.addEventListener("change", async () => {
 
     if (response.ok) {
       const data = await response.json();
-      setStatus("✅ Resume uploaded and saved!");
-      checkResumeStatus();
+      setStatus("✅ Resume uploaded and saved!", "success");
+      // Update UI immediately
+      resumeFileBtn.textContent = "Update file";
+      resumeFileName.textContent = data.filename || "resume.pdf";
     } else {
       let errorMsg = "Failed to upload resume";
       try {
@@ -273,17 +321,17 @@ resumeInput.addEventListener("change", async () => {
 generateBtn.addEventListener("click", async () => {
   try {
     // Hide download section and reset cover letter
-    downloadSection.style.display = "none";
-    viewBtn.style.display = "none";
+    downloadSectionWrapper.style.display = "none";
     currentCoverLetter = null;
     currentMetadata = null;
     
     // Reset button text if template changed
     if (lastGeneratedTemplate !== null && lastGeneratedTemplate !== selectedTemplate) {
-      generateBtn.textContent = "Generate Cover Letter";
+      setButtonText("Generate");
     }
     
-    setStatus("Reading job page...", "");
+    // Clear any previous status messages (but keep errors visible)
+    setStatus("", "");
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -295,7 +343,7 @@ generateBtn.addEventListener("click", async () => {
       return;
     }
 
-    generateBtn.disabled = true;
+    setButtonLoading(true);
 
     chrome.scripting.executeScript(
       {
@@ -306,10 +354,9 @@ generateBtn.addEventListener("click", async () => {
         const jobText = results?.[0]?.result.slice(0, 4000);
         if (!jobText) {
           setStatus("❌ Could not extract job text.", "error");
+          setButtonLoading(false);
           return;
         }
-
-        setStatus("Generating cover letter...", "");
 
         const templateType = selectedTemplate || "default";
 
@@ -341,8 +388,8 @@ generateBtn.addEventListener("click", async () => {
             if (!response.ok) {
               const errText = await response.text();
               setStatus("❌ Error: " + errText, "error");
-              downloadSection.style.display = "none";
-              viewBtn.style.display = "none";
+              downloadSectionWrapper.style.display = "none";
+              setButtonLoading(false);
               return;
             }
             
@@ -352,16 +399,13 @@ generateBtn.addEventListener("click", async () => {
               currentMetadata = data.metadata || null;
               updateViewButton();
               lastGeneratedTemplate = templateType;
-              generateBtn.textContent = "Regenerate Cover Letter";
-              setStatus("✅ Generation complete!", "success");
-              downloadSection.style.display = "block";
-              viewBtn.style.display = "block";
-              generateBtn.disabled = false;
+              setButtonText("Regenerate");
+              downloadSectionWrapper.style.display = "block";
+              setButtonLoading(false);
             } else {
               setStatus("❌ Error: Invalid response from server", "error");
-              downloadSection.style.display = "none";
-              viewBtn.style.display = "none";
-              generateBtn.disabled = false;
+              downloadSectionWrapper.style.display = "none";
+              setButtonLoading(false);
             }
           });
           return;
@@ -370,9 +414,8 @@ generateBtn.addEventListener("click", async () => {
         if (!response.ok) {
           const errText = await response.text();
           setStatus("❌ Error: " + errText, "error");
-          downloadSection.style.display = "none";
-          viewBtn.style.display = "none";
-          generateBtn.disabled = false;
+          downloadSectionWrapper.style.display = "none";
+          setButtonLoading(false);
           return;
         }
 
@@ -382,24 +425,20 @@ generateBtn.addEventListener("click", async () => {
           currentMetadata = data.metadata || null;
           updateViewButton();
           lastGeneratedTemplate = templateType;
-          generateBtn.textContent = "Regenerate Cover Letter";
-          setStatus("✅ Generation complete!", "success");
-          downloadSection.style.display = "block";
-          viewBtn.style.display = "block";
-          generateBtn.disabled = false;
+          setButtonText("Regenerate");
+          downloadSectionWrapper.style.display = "block";
+          setButtonLoading(false);
         } else {
           setStatus("❌ Error: Invalid response from server", "error");
-          downloadSection.style.display = "none";
-          viewBtn.style.display = "none";
-          generateBtn.disabled = false;
+          downloadSectionWrapper.style.display = "none";
+          setButtonLoading(false);
         }
       }
     );
   } catch (err) {
     setStatus("❌ Error: " + err.message, "error");
-    downloadSection.style.display = "none";
-    viewBtn.style.display = "none";
-    generateBtn.disabled = false;
+    downloadSectionWrapper.style.display = "none";
+    setButtonLoading(false);
   }
 });
 
