@@ -13,8 +13,9 @@
         width: 400px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
         background: #ffffff;
-        padding: 20px;
+        padding: 20px 20px 0 20px;
         color: #1a1a1a;
+        margin: 0;
       }
       
       .header {
@@ -35,20 +36,20 @@
       }
       
       .template-selection {
-        margin-bottom: 20px;
+        margin-bottom: 8px;
       }
       
       .template-label {
         font-size: 13px;
         color: #333;
-        margin-bottom: 12px;
+        margin-bottom: 6px;
         font-weight: 500;
       }
       
       .template-cards {
         display: flex;
         gap: 8px;
-        margin-bottom: 20px;
+        margin-bottom: 0;
       }
       
       .template-card {
@@ -147,25 +148,54 @@
       
       .generate-btn {
         width: 100%;
-        padding: 12px 24px;
-        background: #0066ff;
-        color: white;
-        border: none;
+        padding: 7px 11px;
+        background: #ffffff;
+        color: #0066ff;
+        border: 2px solid #0066ff;
         border-radius: 6px;
-        font-size: 14px;
+        font-size: 11px;
         font-weight: 500;
         cursor: pointer;
-        transition: background 0.2s;
-        margin-bottom: 12px;
+        transition: all 0.2s;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 22px;
       }
       
-      .generate-btn:hover {
-        background: #0052cc;
+      .generate-btn:hover:not(:disabled) {
+        background: #0066ff;
+        color: white;
       }
       
       .generate-btn:disabled {
-        background: #ccc;
+        background: #ffffff;
+        color: #0066ff;
+        border-color: #0066ff;
         cursor: not-allowed;
+        opacity: 0.8;
+      }
+      
+      .spinner {
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(0, 102, 255, 0.3);
+        border-top-color: #0066ff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: none;
+      }
+      
+      .generate-btn.loading .spinner {
+        display: block;
+      }
+      
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
       
       .user-info {
@@ -182,7 +212,7 @@
       }
       
       .resume-section {
-        margin-bottom: 16px;
+        margin-bottom: 20px;
       }
       
       .resume-label {
@@ -192,39 +222,50 @@
         font-weight: 500;
       }
       
-      #resumeStatus {
+      .resume-file-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      #resumeFileBtn {
+        padding: 6px 12px;
         font-size: 12px;
-        margin-bottom: 8px;
-        min-height: 16px;
-      }
-      
-      #resumeStatus.success {
-        color: #00a651;
-      }
-      
-      #resumeStatus.warning {
-        color: #ff9500;
-      }
-      
-      input[type="file"] {
-        width: 100%;
-        font-size: 12px;
-        padding: 6px;
         border: 1px solid #e0e0e0;
         border-radius: 4px;
+        background: #f5f5f5;
+        color: #666;
         cursor: pointer;
+        transition: all 0.2s;
+      }
+      
+      #resumeFileBtn:hover {
+        background: #e8e8e8;
+      }
+      
+      #resumeFileName {
+        font-size: 12px;
+        color: #666;
+        flex: 1;
+      }
+      
+      input[type="file"]#resumeInput {
+        display: none;
       }
       
       #signOutBtn {
-        width: 100%;
-        padding: 8px;
+        width: auto;
+        padding: 6px 12px;
         background: #f5f5f5;
         color: #666;
         border: 1px solid #e0e0e0;
         border-radius: 6px;
-        font-size: 12px;
+        font-size: 11px;
         cursor: pointer;
         transition: background 0.2s;
+        margin-top: auto;
+        align-self: flex-end;
+        margin-bottom: 0;
       }
       
       #signOutBtn:hover {
@@ -232,7 +273,8 @@
       }
       
       #status {
-        margin-top: 12px;
+        margin-top: 8px;
+        margin-bottom: 0;
         font-size: 12px;
         color: #666;
         white-space: pre-wrap;
@@ -253,6 +295,8 @@
       
       .signed-in {
         display: none;
+        flex-direction: column;
+        padding-bottom: 0;
       }
       
       #signInBtn {
@@ -272,34 +316,24 @@
         background: #0052cc;
       }
 
-      .download-section {
-        margin-top: 16px;
-        padding: 16px;
-        background: #f5f5f5;
-        border-radius: 6px;
-        margin-bottom: 16px;
-      }
-
-      .download-label {
-        font-size: 13px;
-        color: #333;
-        margin-bottom: 12px;
-        font-weight: 500;
-      }
-
-      .download-buttons {
+      .action-buttons-row {
         display: flex;
-        gap: 8px;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .download-section-wrapper {
+        margin-bottom: 0;
       }
 
       .download-btn {
         flex: 1;
-        padding: 10px 16px;
+        padding: 7px 11px;
         background: #ffffff;
         color: #0066ff;
         border: 2px solid #0066ff;
         border-radius: 6px;
-        font-size: 13px;
+        font-size: 11px;
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s;
@@ -318,17 +352,17 @@
       }
 
       .view-btn {
-        width: 100%;
-        padding: 10px 16px;
+        flex: 1;
+        padding: 7px 11px;
         background: #ffffff;
         color: #0066ff;
         border: 2px solid #0066ff;
         border-radius: 6px;
-        font-size: 13px;
+        font-size: 11px;
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s;
-        margin-bottom: 12px;
+        white-space: nowrap;
       }
 
       .view-btn:hover {
@@ -466,6 +500,15 @@
         <div>Signed in as: <strong id="userEmail"></strong></div>
       </div>
 
+      <div class="resume-section">
+        <div class="resume-label">Resume</div>
+        <div class="resume-file-input-wrapper">
+          <button type="button" id="resumeFileBtn">Choose File</button>
+          <span id="resumeFileName">No file chosen</span>
+        </div>
+        <input type="file" id="resumeInput" accept=".pdf" />
+      </div>
+
       <div class="template-selection">
         <div class="template-label">Choose your template</div>
         <div class="template-cards">
@@ -526,22 +569,17 @@
         </div>
       </div>
 
-      <button id="generateBtn" class="generate-btn">Generate Cover Letter</button>
+      <button id="generateBtn" class="generate-btn">
+        <span class="spinner"></span>
+        <span class="button-text">Generate</span>
+      </button>
 
-      <button id="viewBtn" class="view-btn" style="display: none;">View</button>
-
-      <div id="downloadSection" class="download-section" style="display: none;">
-        <div class="download-label">Download as:</div>
-        <div class="download-buttons">
+      <div id="downloadSectionWrapper" class="download-section-wrapper" style="display: none;">
+        <div id="actionButtonsRow" class="action-buttons-row">
+          <button id="viewBtn" class="view-btn">Preview</button>
           <button id="downloadPdfBtn" class="download-btn">Download PDF</button>
           <button id="downloadDocxBtn" class="download-btn">Download DOCX</button>
         </div>
-      </div>
-
-      <div class="resume-section">
-        <div class="resume-label">Resume</div>
-        <div id="resumeStatus"></div>
-        <input type="file" id="resumeInput" accept=".pdf" />
       </div>
 
       <button id="signOutBtn">Sign Out</button>
