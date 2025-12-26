@@ -1,11 +1,13 @@
 const signInBtn = document.getElementById("signInBtn");
-const signOutBtn = document.getElementById("signOutBtn");
+const userIconBtn = document.getElementById("userIconBtn");
+const userMenu = document.getElementById("userMenu");
+const userMenuEmail = document.getElementById("userMenuEmail");
+const userMenuSignOut = document.getElementById("userMenuSignOut");
 const generateBtn = document.getElementById("generateBtn");
 const statusEl = document.getElementById("status");
 const resumeInput = document.getElementById("resumeInput");
 const resumeFileBtn = document.getElementById("resumeFileBtn");
 const resumeFileName = document.getElementById("resumeFileName");
-const userEmailEl = document.getElementById("userEmail");
 const signedOutView = document.getElementById("signedOutView");
 const signedInView = document.getElementById("signedInView");
 const downloadSectionWrapper = document.getElementById("downloadSectionWrapper");
@@ -127,11 +129,14 @@ function updateUI() {
   if (currentUser) {
     signedOutView.style.display = "none";
     signedInView.style.display = "flex";
-    userEmailEl.textContent = currentUser.email;
+    userIconBtn.style.display = "flex";
+    userMenuEmail.textContent = currentUser.email;
     checkResumeStatus();
   } else {
     signedOutView.style.display = "block";
     signedInView.style.display = "none";
+    userIconBtn.style.display = "none";
+    userMenu.classList.remove("active");
   }
 }
 
@@ -221,8 +226,27 @@ signInBtn.addEventListener("click", () => {
   });
 });
 
+// Toggle user menu
+userIconBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const isActive = userMenu.classList.toggle("active");
+  if (isActive) {
+    userIconBtn.classList.add("active");
+  } else {
+    userIconBtn.classList.remove("active");
+  }
+});
+
+// Close user menu when clicking outside
+document.addEventListener("click", (e) => {
+  if (!userMenu.contains(e.target) && e.target !== userIconBtn) {
+    userMenu.classList.remove("active");
+    userIconBtn.classList.remove("active");
+  }
+});
+
 // Sign out
-signOutBtn.addEventListener("click", () => {
+userMenuSignOut.addEventListener("click", () => {
   chrome.identity.getAuthToken({ interactive: false }, (token) => {
     if (token) {
       chrome.identity.removeCachedAuthToken({ token }, () => {
@@ -230,6 +254,8 @@ signOutBtn.addEventListener("click", () => {
         currentUser = null;
         updateUI();
         setStatus("Signed out", "");
+        userMenu.classList.remove("active");
+        userIconBtn.classList.remove("active");
       });
     }
   });
