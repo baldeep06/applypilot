@@ -58,11 +58,9 @@ let API_URL = "http://localhost:3000"; // Default fallback
 chrome.storage.sync.get(['apiUrl'], (result) => {
   if (result.apiUrl) {
     API_URL = result.apiUrl;
-  } else {
-    // Default: use production URL for deployed extension
-    // Change this to your deployed server URL before publishing
-    API_URL = "https://your-server-domain.com"; // TODO: Replace with your production server URL
   }
+  // If not in storage, keep the default localhost:3000 for development
+  // To use a production server, set 'apiUrl' in Chrome storage or update the default above
 });
 
 let currentUser = null;
