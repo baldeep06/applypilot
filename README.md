@@ -1,4 +1,4 @@
-# 🚀 ApplyPilot
+# ApplyPilot
 
 **ApplyPilot** is a Chrome extension that revolutionizes the job application process by automatically generating personalized cover letters using AI. Simply upload your resume, browse job postings, and let ApplyPilot create professional, tailored cover letters in seconds.
 
