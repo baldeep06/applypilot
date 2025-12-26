@@ -245,7 +245,7 @@
         justify-content: center;
         gap: 6px;
         margin-top: 5px;
-        margin-bottom: 7px
+        margin-bottom: 7px;
       }
       
       .generate-btn:hover:not(:disabled) {
@@ -352,6 +352,7 @@
       
       .signed-out {
         display: none;
+        margin-top: -16px;
       }
       
       .signed-in {
@@ -462,12 +463,12 @@
 
       .pdf-modal-container {
         position: relative;
-        width: 85vw;
-        max-width: 700px;
-        height: 80vh;
-        max-height: 850px;
+        width: 90vw;
+        max-width: 1000px;
+        height: 85vh;
+        max-height: 900px;
         background: white;
-        border-radius: 12px;
+        border-radius: 8px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         display: flex;
         flex-direction: column;
@@ -475,13 +476,13 @@
       }
 
       .pdf-modal-header {
-        padding: 16px 20px;
+        padding: 12px 16px;
         border-bottom: 1px solid #e0e0e0;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #f8f8f8;
-        border-radius: 12px 12px 0 0;
+        background: #ffffff;
+        border-radius: 8px 8px 0 0;
       }
 
       .pdf-modal-title {
@@ -517,7 +518,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #525252;
+        background: #f5f5f5;
       }
 
       .pdf-modal-body iframe {
@@ -563,7 +564,6 @@
 
     <!-- Signed Out View -->
     <div id="signedOutView" class="signed-out">
-      <p style="margin-bottom: 16px; color: #666; font-size: 14px;">Sign in to save your resume and generate cover letters</p>
       <button id="signInBtn">Sign In with Google</button>
     </div>
 
@@ -659,7 +659,7 @@
     <div id="pdfModalOverlay" class="pdf-modal-overlay">
       <div class="pdf-modal-container">
         <div class="pdf-modal-header">
-          <div class="pdf-modal-title">Cover Letter Preview</div>
+          <div class="pdf-modal-title">Preview</div>
           <button class="pdf-modal-close" id="pdfModalClose">×</button>
         </div>
         <div class="pdf-modal-body">
