@@ -19,6 +19,10 @@ RULE 8: Get straight to the point - no fluff, be direct and brief
 ❌ NEVER copy exact sentences from the resume word-for-word
 ❌ NEVER list many technologies - focus on 1-2 most relevant ones
 ❌ NEVER add unnecessary filler words or phrases
+❌ NEVER start consecutive sentences with the same structure or word
+❌ NEVER use phrases like "Additionally," "Furthermore," "Moreover," "In addition,"
+❌ NEVER write sentences that feel disconnected - each should flow into the next
+❌ NEVER use transition words that sound academic or formal
 
 ===== REQUIRED APPROACH =====
 ✅ Write like a real person having a conversation
@@ -28,6 +32,14 @@ RULE 8: Get straight to the point - no fluff, be direct and brief
 ✅ Keep sentences short and direct
 ✅ Be conversational, not formal or stiff
 ✅ Be brief - every word counts
+
+===== FLOW AND TRANSITIONS =====
+✅ Vary sentence structure - mix short and longer sentences naturally
+✅ Use conversational connectors: "and," "so," "which," "while," "since"
+✅ Let ideas flow into each other - second sentence should build on first
+✅ Think: "How would I explain this to a friend?" not "How do I list my qualifications?"
+✅ Read it aloud - if it sounds stilted or robotic, rewrite it
+✅ Keep it tight - in this short format, every transition word must earn its place
 
 ===== INPUT DATA =====
 
@@ -52,32 +64,37 @@ Dear [Hiring manager name OR "Hiring Manager"],
 I am writing to express my interest in the [simplified role title - make it logical and concise] position at [company name]. As a [field of study] student at [university], I am excited about the opportunity to contribute to your team.
 
 [PARAGRAPH 1 - EXACTLY 60-75 WORDS - COUNT YOUR WORDS]
-FOCUS: Briefly mention 1-2 key technical skills that overlap with job
+FOCUS: Briefly mention 1-2 key technical skills that overlap with job - with natural flow
 
 Instructions:
 - Identify the 1-2 MOST important technologies that appear in BOTH the job posting AND resume
-- Explain your experience naturally and briefly (rephrase, don't copy resume)
-- Connect this experience to what the role needs
-- Sound like a real person explaining their background, not listing credentials
+- Tell a brief story about your experience - don't just state facts
+- Let each sentence flow naturally into the next - avoid choppy statements
+- Use "and," "while," "which" to connect ideas smoothly (but be economical)
+- Connect this experience to what the role needs without saying "This aligns with..." or "This matches..."
 - Keep under 75 words
-- Be direct and concise
+- Be direct and concise - no filler
 
-Example: "I noticed the role involves working with React and Python, which I've used extensively in my previous work. At [Company], I built several web applications with React, focusing on responsive user interfaces. I also worked with Python for backend services. This combination seems like a great match for the full-stack work you're looking for."
+Better Example: "I noticed the role involves React and Python, which I've been working with at [Company]. I built web applications where I used React for the frontend while handling backend services with Python. This full-stack experience seems like it'd translate well to what you're building, especially with [specific project if known]."
+
+Avoid: "I have experience with React. I also worked with Python. Additionally, I developed applications. This aligns with your requirements."
 
 [PARAGRAPH 2 - EXACTLY 60-75 WORDS - COUNT YOUR WORDS]
-FOCUS: Express interest in company (more casual/direct tone)
+FOCUS: Express interest in company (casual/direct tone) - with natural flow
 
 Instructions:
-- Talk about what the company is doing (mission, products, recent news, initiatives)
-- Show you've researched them
-- Express genuine interest with a more casual, direct tone
-- Connect briefly to why you're interested
-- Keep the focus on THEM
-- Sound genuinely interested, not formulaic
+- Start with what drew you to the company - specific product, mission, or development
+- Show genuine interest with a casual, direct tone - not generic praise
+- Let your enthusiasm come through naturally
+- Connect their work to why you're interested without explicitly saying "I value..." or "This aligns..."
+- Use natural connectors to tie sentences together
+- Avoid formal transition words
 - Keep under 75 words
-- Be direct and brief
+- Be direct and brief - no fluff
 
-Example: "I've been following [Company]'s work on [specific product/initiative], and I'm really impressed by how you're approaching [specific challenge/opportunity]. I'm drawn to this kind of collaborative, mission-driven environment. In my past roles, I've found that I do my best work when I'm part of a team tackling meaningful problems, and that seems to be exactly what this role offers."
+Better Example: "I've been following [Company]'s work on [specific product/initiative], and the way you're approaching [challenge] really stands out. I've always done my best work on teams solving meaningful problems collaboratively, which seems to be exactly what you've built here."
+
+Avoid: "I am impressed by [Company]. Additionally, I value collaboration. Furthermore, I align with your mission."
 
 I am confident that my [2 general skills that match job] would make me a valuable asset to [company - use shortened name if appropriate]. Thank you for considering my application.
 
@@ -116,4 +133,8 @@ Before outputting, COUNT and verify:
 □ Exactly ONE blank line between sections
 □ Simple, concise, conversational language
 □ Direct and brief - no fluff
-
+□ Read aloud - does it sound like a real person wrote this?
+□ No consecutive sentences start the same way
+□ No formal transitions like "Additionally," "Furthermore," "Moreover"
+□ Sentences flow smoothly into each other - no choppy, disconnected statements
+□ Varies between shorter and longer sentences naturally

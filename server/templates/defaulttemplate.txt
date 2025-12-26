@@ -17,6 +17,10 @@ RULE 7: Write naturally and conversationally - avoid formulaic or robotic phrasi
 ❌ NEVER use em dashes (—) - use commas or periods instead
 ❌ NEVER copy exact sentences from the resume word-for-word
 ❌ NEVER list many technologies - focus on 2-3 most relevant ones
+❌ NEVER start consecutive sentences with the same structure or word
+❌ NEVER use phrases like "Additionally," "Furthermore," "Moreover," "In addition,"
+❌ NEVER write sentences that feel disconnected - each should flow into the next
+❌ NEVER use transition words that sound academic or formal
 
 ===== REQUIRED APPROACH =====
 ✅ Write like a real person having a conversation
@@ -25,6 +29,13 @@ RULE 7: Write naturally and conversationally - avoid formulaic or robotic phrasi
 ✅ In paragraph 3: Talk MORE about the company, LESS about yourself
 ✅ Keep sentences short and direct
 ✅ Be conversational, not formal or stiff
+
+===== FLOW AND TRANSITIONS =====
+✅ Vary sentence structure - mix short and longer sentences naturally
+✅ Use conversational connectors: "and," "so," "which," "while," "since"
+✅ Let ideas flow into each other - second sentence should build on first
+✅ Think: "How would I explain this to a friend?" not "How do I list my qualifications?"
+✅ Read it aloud - if it sounds stilted or robotic, rewrite it
 
 ===== INPUT DATA =====
 
@@ -49,30 +60,36 @@ Dear [Hiring manager name OR "Hiring Manager"],
 I am writing to express my interest in the [simplified role title - make it logical and concise] position at [company name]. As a [field of study] student at [university], I am excited about the opportunity to contribute to your team and gain valuable experience in the field.
 
 [PARAGRAPH 2 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
-FOCUS: Deep dive on 2-3 key overlapping technologies
+FOCUS: Deep dive on 2-3 key overlapping technologies with natural flow
 
 Instructions:
 - Identify the 2-3 MOST important technologies that appear in BOTH the job posting AND resume
-- For each technology, explain your experience naturally (rephrase, don't copy resume)
-- Go deeper on fewer technologies rather than listing many
-- Connect this experience to what the role needs
-- Sound like a real person explaining their background, not listing credentials
+- Tell a mini-story about your experience - don't just state facts
+- Let each sentence flow naturally into the next - avoid choppy, disconnected statements
+- Use "and," "while," "which" to connect ideas smoothly
+- Vary sentence length - mix shorter and longer sentences
+- Connect this experience to what the role needs without saying "This aligns with..." or "This matches..."
 - Keep under 105 words
 
-Example: "I noticed the role involves working with React and Python, which I've used extensively in my previous work. At [Company], I built several web applications with React, focusing on creating responsive user interfaces. I also spent time working with Python for backend services and data processing. This combination seems like a great match for the full-stack work you're looking for, and I'm excited about the chance to bring that experience to [Company's specific project/product]."
+Better Example: "I noticed the role involves React and Python, which I've been working with pretty extensively. At [Company], I built several web applications where I used React to create responsive interfaces while handling the backend with Python. The Python work was mainly for data processing and API development, and I got comfortable moving between frontend and backend tasks. This full-stack experience seems like it'd translate well to what you're building at [Company], especially with [specific project/product if known]."
+
+Avoid: "I have experience with React. I also worked with Python. Additionally, I developed web applications. Furthermore, I created APIs. This aligns with your requirements."
 
 [PARAGRAPH 3 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
-FOCUS: What the COMPANY is doing (60-70% about company, 30-40% about you)
+FOCUS: What the COMPANY is doing (60-70% about company, 30-40% about you) - with natural flow
 
 Instructions:
-- Start by talking about what the company is doing (mission, products, recent news, initiatives)
-- Show you've researched them and understand their work
-- Then naturally connect to relevant soft skills you have
-- Keep the focus on THEM and what they're building, not just listing your qualities
-- Sound genuinely interested, not formulaic
+- Start with what drew you to the company - specific product, mission, or recent development
+- Show genuine interest, not generic praise
+- Let your enthusiasm come through naturally, not formally
+- Connect their work to your values/work style without explicitly saying "I value..." or "My values align..."
+- Use natural connectors to tie sentences together
+- Avoid formal transition words - write like you're talking to someone
 - Keep under 105 words
 
-Example: "I've been following [Company]'s work on [specific product/initiative], and I'm really impressed by how you're approaching [specific challenge/opportunity]. The recent [news/development] caught my attention because it shows your commitment to [value/mission]. I'm drawn to this kind of collaborative, mission-driven environment. In my past roles, I've found that I do my best work when I'm part of a team tackling meaningful problems, and that seems to be exactly what this role offers."
+Better Example: "I've been following [Company]'s work on [specific product/initiative], and the way you're approaching [challenge] really stands out. The recent [news/development] showed me you're serious about [value/mission], which is exactly the kind of environment where I do my best work. I've always gravitated toward teams that are solving meaningful problems collaboratively, and from everything I've read, that seems to be what you've built here."
+
+Avoid: "I am impressed by [Company]. Additionally, I value collaboration. Furthermore, I align with your mission. Moreover, I want to contribute."
 
 I am confident that my [2-3 general skills that match job] and strong work ethic would make me a valuable asset to [company - use shortened name if appropriate]. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application.
 
@@ -110,3 +127,8 @@ Before outputting, COUNT and verify:
 □ NO em dashes (—) used anywhere
 □ Exactly ONE blank line between sections
 □ Simple, concise, conversational language
+□ Read aloud - does it sound like a real person wrote this?
+□ No consecutive sentences start the same way
+□ No formal transitions like "Additionally," "Furthermore," "Moreover"
+□ Sentences flow smoothly into each other - no choppy, disconnected statements
+□ Varies between shorter and longer sentences naturally
