@@ -17,6 +17,7 @@ const viewBtn = document.getElementById("viewBtn");
 const pdfModalOverlay = document.getElementById("pdfModalOverlay");
 const pdfViewer = document.getElementById("pdfViewer");
 const pdfModalClose = document.getElementById("pdfModalClose");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 
 let currentCoverLetter = null;
 let currentMetadata = null;
@@ -131,12 +132,15 @@ function updateUI() {
     signedInView.style.display = "flex";
     userIconBtn.style.display = "flex";
     userMenuEmail.textContent = currentUser.email;
+    userMenu.classList.remove("active");
+    userIconBtn.classList.remove("active");
     checkResumeStatus();
   } else {
     signedOutView.style.display = "block";
     signedInView.style.display = "none";
     userIconBtn.style.display = "none";
     userMenu.classList.remove("active");
+    userIconBtn.classList.remove("active");
   }
 }
 
@@ -772,6 +776,36 @@ downloadDocxBtn.addEventListener("click", async () => {
     downloadDocxBtn.disabled = false;
   }
 });
+
+// Theme toggle functionality
+function applyTheme(isDark) {
+  if (isDark) {
+    document.body.classList.add("dark-mode");
+  } else {
+    document.body.classList.remove("dark-mode");
+  }
+}
+
+function loadTheme() {
+  chrome.storage.local.get("darkMode", (data) => {
+    const isDark = data.darkMode === true;
+    applyTheme(isDark);
+  });
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  const isDark = document.body.classList.contains("dark-mode");
+  const newTheme = !isDark;
+  applyTheme(newTheme);
+  chrome.storage.local.set({ darkMode: newTheme });
+});
+
+// Load theme on page load
+loadTheme();
+
+// Ensure user menu is closed on page load
+userMenu.classList.remove("active");
+userIconBtn.classList.remove("active");
 
 // Check if user is already signed in
 chrome.storage.local.get("user", (data) => {
