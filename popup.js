@@ -52,7 +52,7 @@ templateCards.forEach(card => {
 
 // API URL configuration - uses production URL in deployed extension, localhost in development
 // Production URL should be set in config.js or via Chrome storage
-let API_URL = "http://localhost:3000"; // Default fallback
+let API_URL = "applypilot-production-5359.up.railway.app"; // Default fallback
 
 // Try to get API URL from storage (allows remote updates)
 chrome.storage.sync.get(['apiUrl'], (result) => {
