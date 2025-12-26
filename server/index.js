@@ -466,7 +466,7 @@ async function generateDOCXBuffer(coverLetter) {
         if (textRuns.length > 0) {
           // Add bullet character and tab - tab will align all text lines at the same position
           textRuns.unshift(new Tab());
-          textRuns.unshift(createTextRun("•"));
+          textRuns.unshift(createTextRun("•     "));
           
           // Bullet indented once at 24pt, text indented twice at 44pt (20pt further)
           // All text lines (including first line) align at the tab stop position - no hanging indent
