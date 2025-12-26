@@ -50,7 +50,20 @@ templateCards.forEach(card => {
   });
 });
 
-const API_URL = "http://localhost:3000";
+// API URL configuration - uses production URL in deployed extension, localhost in development
+// Production URL should be set in config.js or via Chrome storage
+let API_URL = "http://localhost:3000"; // Default fallback
+
+// Try to get API URL from storage (allows remote updates)
+chrome.storage.sync.get(['apiUrl'], (result) => {
+  if (result.apiUrl) {
+    API_URL = result.apiUrl;
+  } else {
+    // Default: use production URL for deployed extension
+    // Change this to your deployed server URL before publishing
+    API_URL = "https://your-server-domain.com"; // TODO: Replace with your production server URL
+  }
+});
 
 let currentUser = null;
 

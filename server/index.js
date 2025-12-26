@@ -12,7 +12,36 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Tab,
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// CORS configuration - secure for production
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests from Chrome extensions (no origin) and specific domains
+    const allowedOrigins = [
+      'chrome-extension://', // Chrome extensions
+      process.env.ALLOWED_ORIGIN, // Custom allowed origin from env
+    ].filter(Boolean);
+    
+    // In production, be more restrictive
+    if (process.env.NODE_ENV === 'production') {
+      // Allow Chrome extensions (origin is null for extension requests)
+      if (!origin || origin.startsWith('chrome-extension://')) {
+        callback(null, true);
+      } else if (process.env.ALLOWED_ORIGIN && origin === process.env.ALLOWED_ORIGIN) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    } else {
+      // In development, allow all origins
+      callback(null, true);
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 
 const supabase = createClient(

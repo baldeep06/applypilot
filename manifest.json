@@ -1,6 +1,6 @@
 {
-  "name": "applypilot",
-  "description": "make it easier to get a job",
+  "name": "ApplyPilot",
+  "description": "Making it easier to get a job.",
   "version": "1.0",
   "manifest_version": 3,
   "permissions": ["activeTab", "scripting", "storage", "identity"],
