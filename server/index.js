@@ -175,24 +175,35 @@ function generatePDFBuffer(coverLetter) {
       let isHeaderSection = true;
       let headerLines = [];
       
+      // First pass: find all bullet points to identify the last one
+      const bulletIndices = [];
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+        if (line.trim().match(/^[*·]\s+/)) {
+          bulletIndices.push(i);
+        }
+      }
+      const lastBulletIndex = bulletIndices.length > 0 ? bulletIndices[bulletIndices.length - 1] : -1;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const isLastBullet = (i === lastBulletIndex);
         
         // Detect end of header (when we hit "Dear")
         if (line.trim().startsWith('Dear')) {
           isHeaderSection = false;
           
-          // Render header with tight spacing
+          // Render header with full line spacing
           if (headerLines.length > 0) {
             // First line is date
             doc.text(headerLines[0], { lineGap: 0 });
-            doc.moveDown(0.5); // Small space after date
+            doc.moveDown(1); // Full space after date
             
             // Name, phone, email with NO spacing between them
             for (let j = 1; j < headerLines.length; j++) {
               doc.text(headerLines[j], { lineGap: 0 });
             }
-            doc.moveDown(0.5); // Small space after contact info
+            doc.moveDown(1); // Full space after contact info (before "Dear")
             headerLines = [];
           }
         }
@@ -208,9 +219,14 @@ function generatePDFBuffer(coverLetter) {
           continue;
         }
         
-        // Handle empty lines (paragraph breaks)
+        // Handle empty lines (paragraph breaks) - full line spacing
+        // Skip empty line after "Sincerely," to ensure no space before name
         if (line.trim().length === 0) {
-          doc.moveDown(0.5);
+          // Check if previous line was "Sincerely," - if so, skip this empty line
+          if (i > 0 && lines[i-1].trim().toLowerCase().startsWith('sincerely')) {
+            continue; // Skip empty line after "Sincerely," - name should follow with 0 spacing
+          }
+          doc.moveDown(1);
           continue;
         }
 
@@ -273,7 +289,10 @@ function generatePDFBuffer(coverLetter) {
           // End line and reset
           doc.font('Times-Roman');
           doc.x = originalX;
-          doc.moveDown(0.5);
+          // Full line spacing after bullet point (matching DOCX 264 twips), except for the last one
+          if (!isLastBullet) {
+            doc.moveDown(1); // Full line spacing to match DOCX
+          }
           
         } else {
           // Regular line - handle bold formatting
@@ -297,7 +316,14 @@ function generatePDFBuffer(coverLetter) {
           if (!isFirst) {
             doc.text(''); // End line
           }
-          doc.moveDown(0.5);
+          
+          // Check if this is "Sincerely," - next line (name) should have 0 spacing
+          const isSincerelyLine = line.trim().toLowerCase().startsWith('sincerely');
+          if (!isSincerelyLine) {
+            // Full line spacing after paragraphs (but not after "Sincerely,")
+            // Spacing is handled by empty lines in source, so don't add extra here
+            // Empty lines will add the spacing
+          }
         }
       }
     } else {
@@ -449,14 +475,9 @@ async function generateDOCXBuffer(coverLetter) {
             children: textRuns,
             spacing: { after: isLastBullet ? 0 : 264 }, // Space between bullets, but not after last bullet
             indent: { 
-              left: 480   // 24pt = 480 twips (bullet position - first indent from left margin)
-            },
-            tabStops: [
-              {
-                type: TabStopType.LEFT,
-                position: 880 // 44pt = 880 twips absolute from left margin (text position - second indent, all lines align here)
-              }
-            ]
+              left: 720,      // 36pt = 720 twips (where text starts)
+              hanging: 360    // 18pt = 360 twips (bullet hangs back from text)
+            }
           }));
         }
       } else {
