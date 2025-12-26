@@ -222,7 +222,7 @@ signInBtn.addEventListener("click", () => {
     // Save to chrome storage
     chrome.storage.local.set({ user: currentUser });
     updateUI();
-    setStatus("✅ Signed in successfully!", "success");
+    setStatus("", "");
   });
 });
 
@@ -253,7 +253,7 @@ userMenuSignOut.addEventListener("click", () => {
         chrome.storage.local.remove("user");
         currentUser = null;
         updateUI();
-        setStatus("Signed out", "");
+        setStatus("", "");
         userMenu.classList.remove("active");
         userIconBtn.classList.remove("active");
       });
@@ -270,7 +270,7 @@ resumeInput.addEventListener("change", async () => {
   formData.append("resume", file);
 
   try {
-    setStatus("Uploading resume...", "");
+    setStatus("", "");
     
     // Get fresh token
     let token = await getAuthToken();
@@ -297,7 +297,7 @@ resumeInput.addEventListener("change", async () => {
         
         if (response.ok) {
           const data = await response.json();
-          setStatus("✅ Resume uploaded and saved!", "success");
+          setStatus("", "");
           // Update UI immediately
           resumeFileBtn.textContent = "Update file";
           resumeFileName.textContent = data.filename || "resume.pdf";
@@ -318,7 +318,7 @@ resumeInput.addEventListener("change", async () => {
 
     if (response.ok) {
       const data = await response.json();
-      setStatus("✅ Resume uploaded and saved!", "success");
+      setStatus("", "");
       // Update UI immediately
       resumeFileBtn.textContent = "Update file";
       resumeFileName.textContent = data.filename || "resume.pdf";
@@ -476,9 +476,8 @@ downloadPdfBtn.addEventListener("click", async () => {
   }
 
   try {
-    setStatus("Generating PDF...", "");
+    setStatus("", "");
     downloadPdfBtn.disabled = true;
-    downloadDocxBtn.disabled = true;
 
     let token = await getAuthToken();
     
@@ -508,7 +507,6 @@ downloadPdfBtn.addEventListener("click", async () => {
           const errText = await response.text();
           setStatus("❌ Error: " + errText, "error");
           downloadPdfBtn.disabled = false;
-          downloadDocxBtn.disabled = false;
           return;
         }
         
@@ -530,9 +528,8 @@ downloadPdfBtn.addEventListener("click", async () => {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        setStatus("✅ PDF downloaded!", "success");
+        setStatus("", "");
         downloadPdfBtn.disabled = false;
-        downloadDocxBtn.disabled = false;
       });
       return;
     }
@@ -541,7 +538,6 @@ downloadPdfBtn.addEventListener("click", async () => {
       const errText = await response.text();
       setStatus("❌ Error: " + errText, "error");
       downloadPdfBtn.disabled = false;
-      downloadDocxBtn.disabled = false;
       return;
     }
 
@@ -564,13 +560,11 @@ downloadPdfBtn.addEventListener("click", async () => {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
 
-    setStatus("✅ PDF downloaded!", "success");
+    setStatus("", "");
     downloadPdfBtn.disabled = false;
-    downloadDocxBtn.disabled = false;
   } catch (err) {
     setStatus("❌ Error: " + err.message, "error");
     downloadPdfBtn.disabled = false;
-    downloadDocxBtn.disabled = false;
   }
 });
 
@@ -582,7 +576,7 @@ viewBtn.addEventListener("click", async () => {
   }
 
   try {
-    setStatus("Loading PDF...", "");
+    setStatus("", "");
     viewBtn.disabled = true;
 
     let token = await getAuthToken();
@@ -687,8 +681,7 @@ downloadDocxBtn.addEventListener("click", async () => {
   }
 
   try {
-    setStatus("Generating DOCX...", "");
-    downloadPdfBtn.disabled = true;
+    setStatus("", "");
     downloadDocxBtn.disabled = true;
 
     let token = await getAuthToken();
@@ -718,7 +711,6 @@ downloadDocxBtn.addEventListener("click", async () => {
         if (!response.ok) {
           const errText = await response.text();
           setStatus("❌ Error: " + errText, "error");
-          downloadPdfBtn.disabled = false;
           downloadDocxBtn.disabled = false;
           return;
         }
@@ -741,8 +733,7 @@ downloadDocxBtn.addEventListener("click", async () => {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        setStatus("✅ DOCX downloaded!", "success");
-        downloadPdfBtn.disabled = false;
+        setStatus("", "");
         downloadDocxBtn.disabled = false;
       });
       return;
@@ -751,7 +742,6 @@ downloadDocxBtn.addEventListener("click", async () => {
     if (!response.ok) {
       const errText = await response.text();
       setStatus("❌ Error: " + errText, "error");
-      downloadPdfBtn.disabled = false;
       downloadDocxBtn.disabled = false;
       return;
     }
@@ -775,12 +765,10 @@ downloadDocxBtn.addEventListener("click", async () => {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
 
-    setStatus("✅ DOCX downloaded!", "success");
-    downloadPdfBtn.disabled = false;
+    setStatus("", "");
     downloadDocxBtn.disabled = false;
   } catch (err) {
     setStatus("❌ Error: " + err.message, "error");
-    downloadPdfBtn.disabled = false;
     downloadDocxBtn.disabled = false;
   }
 });

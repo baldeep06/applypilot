@@ -9,8 +9,17 @@
     "client_id": "875491684134-g3nd3j7oep8niarr5lfu1gpt9d8vvv4c.apps.googleusercontent.com",
     "scopes": ["email", "profile"]
   },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
   }
 }
