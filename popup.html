@@ -20,6 +20,10 @@
       
       .header {
         margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
       }
       
       h1 {
@@ -27,6 +31,85 @@
         font-weight: 600;
         color: #1a1a1a;
         margin-bottom: 8px;
+      }
+      
+      .user-icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #666;
+        transition: all 0.2s;
+        margin-top: -8px;
+      }
+      
+      .user-icon-btn:hover,
+      .user-icon-btn.active {
+        background: #0066ff;
+        border-color: #0066ff;
+      }
+      
+      .user-icon-btn:hover svg path,
+      .user-icon-btn.active svg path {
+        fill: white;
+      }
+      
+      .user-icon-btn.active {
+        background: #0066ff;
+        border-color: #0066ff;
+      }
+      
+      .user-icon-btn.active svg path {
+        fill: white;
+      }
+      
+      .user-menu {
+        position: absolute;
+        top: 40px;
+        right: 0;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        padding: 12px;
+        min-width: 200px;
+        z-index: 1000;
+        display: none;
+      }
+      
+      .user-menu.active {
+        display: block;
+      }
+      
+      .user-menu-email {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e0e0e0;
+        word-break: break-all;
+      }
+      
+      .user-menu-signout {
+        width: 100%;
+        padding: 6px 12px;
+        background: #f5f5f5;
+        color: #666;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      
+      .user-menu-signout:hover {
+        background: #e8e8e8;
       }
       
       .subtitle {
@@ -41,7 +124,7 @@
       
       .template-label {
         font-size: 13px;
-        color: #333;
+        color: #1a1a1a;
         margin-bottom: 6px;
         font-weight: 500;
       }
@@ -67,13 +150,12 @@
       }
       
       .template-card:hover {
-        border-color: #0066ff;
-        box-shadow: 0 2px 8px rgba(0, 102, 255, 0.1);
+        border-color: #d0d0d0;
       }
       
       .template-card.selected {
         border-color: #0066ff;
-        background: #f0f6ff;
+        background: #ffffff;
       }
       
       .checkmark {
@@ -101,7 +183,7 @@
       .template-name {
   font-size: 11px;
   font-weight: 600;
-  color: #333;
+  color: #1a1a1a;
   text-align: center;
   margin-bottom: 8px;
 }
@@ -150,8 +232,8 @@
         width: 100%;
         padding: 7px 11px;
         background: #ffffff;
-        color: #0066ff;
-        border: 2px solid #0066ff;
+        color: #333;
+        border: 2px solid #d0d0d0;
         border-radius: 6px;
         font-size: 11px;
         font-weight: 500;
@@ -162,18 +244,20 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        margin-bottom: 22px;
+        margin-top: 5px;
+        margin-bottom: 7px
       }
       
       .generate-btn:hover:not(:disabled) {
         background: #0066ff;
         color: white;
+        border-color: #0066ff;
       }
       
       .generate-btn:disabled {
         background: #ffffff;
-        color: #0066ff;
-        border-color: #0066ff;
+        color: #999;
+        border-color: #d0d0d0;
         cursor: not-allowed;
         opacity: 0.8;
       }
@@ -181,11 +265,16 @@
       .spinner {
         width: 12px;
         height: 12px;
-        border: 2px solid rgba(0, 102, 255, 0.3);
-        border-top-color: #0066ff;
+        border: 2px solid rgba(51, 51, 51, 0.3);
+        border-top-color: #333;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         display: none;
+      }
+      
+      .generate-btn:hover:not(:disabled) .spinner {
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
       }
       
       .generate-btn.loading .spinner {
@@ -198,18 +287,6 @@
         }
       }
       
-      .user-info {
-        background: #f5f5f5;
-        padding: 10px;
-        border-radius: 6px;
-        margin-bottom: 16px;
-        font-size: 12px;
-        color: #666;
-      }
-      
-      .user-info strong {
-        color: #1a1a1a;
-      }
       
       .resume-section {
         margin-bottom: 20px;
@@ -217,7 +294,7 @@
       
       .resume-label {
         font-size: 13px;
-        color: #333;
+        color: #1a1a1a;
         margin-bottom: 8px;
         font-weight: 500;
       }
@@ -240,7 +317,9 @@
       }
       
       #resumeFileBtn:hover {
-        background: #e8e8e8;
+        background: #0066ff;
+        color: white;
+        border-color: #0066ff;
       }
       
       #resumeFileName {
@@ -253,24 +332,6 @@
         display: none;
       }
       
-      #signOutBtn {
-        width: auto;
-        padding: 6px 12px;
-        background: #f5f5f5;
-        color: #666;
-        border: 1px solid #e0e0e0;
-        border-radius: 6px;
-        font-size: 11px;
-        cursor: pointer;
-        transition: background 0.2s;
-        margin-top: auto;
-        align-self: flex-end;
-        margin-bottom: 0;
-      }
-      
-      #signOutBtn:hover {
-        background: #e8e8e8;
-      }
       
       #status {
         margin-top: 8px;
@@ -313,7 +374,8 @@
       }
       
       #signInBtn:hover {
-        background: #0052cc;
+        background: #0066ff;
+        opacity: 0.9;
       }
 
       .action-buttons-row {
@@ -330,8 +392,8 @@
         flex: 1;
         padding: 7px 11px;
         background: #ffffff;
-        color: #0066ff;
-        border: 2px solid #0066ff;
+        color: #333;
+        border: 2px solid #d0d0d0;
         border-radius: 6px;
         font-size: 11px;
         font-weight: 500;
@@ -342,6 +404,7 @@
       .download-btn:hover {
         background: #0066ff;
         color: white;
+        border-color: #0066ff;
       }
 
       .download-btn:disabled {
@@ -355,8 +418,8 @@
         flex: 1;
         padding: 7px 11px;
         background: #ffffff;
-        color: #0066ff;
-        border: 2px solid #0066ff;
+        color: #333;
+        border: 2px solid #d0d0d0;
         border-radius: 6px;
         font-size: 11px;
         font-weight: 500;
@@ -368,6 +431,7 @@
       .view-btn:hover {
         background: #0066ff;
         color: white;
+        border-color: #0066ff;
       }
 
       .view-btn:disabled {
@@ -486,6 +550,15 @@
   <body>
     <div class="header">
       <h1>Apply Pilot</h1>
+      <button id="userIconBtn" class="user-icon-btn" style="display: none;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 8C9.933 8 11.5 6.433 11.5 4.5S9.933 1 8 1 4.5 2.567 4.5 4.5 6.067 8 8 8zM8 9.5C5.505 9.5 0.5 10.754 0.5 13.25V15h15v-1.75C15.5 10.754 10.495 9.5 8 9.5z" fill="#666"/>
+        </svg>
+      </button>
+      <div id="userMenu" class="user-menu">
+        <div id="userMenuEmail" class="user-menu-email"></div>
+        <button id="userMenuSignOut" class="user-menu-signout">Sign Out</button>
+      </div>
     </div>
 
     <!-- Signed Out View -->
@@ -496,10 +569,6 @@
 
     <!-- Signed In View -->
     <div id="signedInView" class="signed-in">
-      <div class="user-info">
-        <div>Signed in as: <strong id="userEmail"></strong></div>
-      </div>
-
       <div class="resume-section">
         <div class="resume-label">Resume</div>
         <div class="resume-file-input-wrapper">
@@ -582,7 +651,6 @@
         </div>
       </div>
 
-      <button id="signOutBtn">Sign Out</button>
     </div>
 
     <div id="status"></div>
