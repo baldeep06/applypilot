@@ -13,16 +13,16 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration - secure for production
+// CORS configuration - for prod
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests from Chrome extensions (no origin) and specific domains
+    // Allow requests from Chrome extensions
     const allowedOrigins = [
       'chrome-extension://', // Chrome extensions
-      process.env.ALLOWED_ORIGIN, // Custom allowed origin from env
+      process.env.ALLOWED_ORIGIN, 
     ].filter(Boolean);
     
-    // In production, be more restrictive
+    // add restriction in prod
     if (process.env.NODE_ENV === 'production') {
       // Allow Chrome extensions (origin is null for extension requests)
       if (!origin || origin.startsWith('chrome-extension://')) {
@@ -57,6 +57,7 @@ const supabase = createClient(
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+// env variable presence check - gemini, supabase, service role keys
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ GEMINI_API_KEY missing in .env");
   process.exit(1);
@@ -72,6 +73,7 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY) {
   process.exit(1);
 }
 
+// initializing gemini llm model for cover letters
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -81,24 +83,24 @@ const model = genAI.getGenerativeModel({
   }
 });
 
-// Helper function to extract candidate name from resume
+// to extract candidate name from resume
 async function extractCandidateName(resumeText) {
   try {
-    // Try simple extraction first - name is usually on first line
+    // simple extraction try
     const firstLine = resumeText.split('\n')[0].trim();
-    // If first line looks like a name (2-4 words, no special chars except spaces and hyphens)
+    // first line in resume may look like name - check and if so, extract and save
     if (firstLine.match(/^[A-Za-z\s-]{2,50}$/) && firstLine.split(/\s+/).length >= 2 && firstLine.split(/\s+/).length <= 4) {
       return firstLine;
     }
     
-    // Fallback: use LLM extraction
+    // if unable, use gemini llm to extract
     const prompt = `Extract the candidate's full name from this resume text. Return ONLY the name, nothing else. If you can't find it, return "Candidate".
 
 Resume text:
 ${resumeText.substring(0, 1000)}
 
 Name:`;
-    
+    // error handling for name
     const result = await model.generateContent(prompt);
     const name = result.response.text().trim();
     return name || "Candidate";
@@ -108,7 +110,7 @@ Name:`;
   }
 }
 
-// Helper function to extract company and position from job posting
+// to extract company and position from job posting - using  llm, prompt provided vefore
 async function extractJobInfo(jobText) {
   try {
     const prompt = `Extract the company name and job position/title from this job posting. Be precise and extract only the essential information.
@@ -144,6 +146,7 @@ Example format: {"company": "RBC", "position": "Software Developer"}`;
     let responseText = result.response.text().trim();
     
     // Extract JSON from response (might be wrapped in markdown code blocks)
+    // below, the job posting is cleaned up for cover letter purposes, removing extra fluff
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const jobInfo = JSON.parse(jsonMatch[0]);
@@ -151,17 +154,18 @@ Example format: {"company": "RBC", "position": "Software Developer"}`;
       let company = (jobInfo.company || "Company").trim();
       // Remove year patterns
       company = company.replace(/\s+\d{4}\s*/g, ' ').trim();
-      // Remove common program indicators
+      // Remove common program indicators, sseason, etc
       company = company.replace(/\s+(Summer|Winter|Spring|Fall|Co-op|Coop|Student|Opportunities|Program).*/gi, '').trim();
       // Take only the first meaningful part (before common separators like dash, comma for departments)
       company = company.split(/[-–—,]/)[0].trim();
       
+      // the formatted job info
       return {
         company: company || "Company",
         position: (jobInfo.position || "Position").trim()
       };
     }
-    
+    // the formatted job info
     return { company: "Company", position: "Position" };
   } catch (err) {
     console.error("Error extracting job info:", err);
@@ -169,16 +173,16 @@ Example format: {"company": "RBC", "position": "Software Developer"}`;
   }
 }
 
-// Helper function to sanitize filename
+// to cleanup filename for cover letter
 function sanitizeFilename(text) {
   return text
-    .replace(/[<>:"/\\|?*]/g, '') // Remove invalid filename chars
-    .replace(/\s+/g, ' ') // Normalize whitespace
+    .replace(/[<>:"/\\|?*]/g, '') // get rid of invalid characters
+    .replace(/\s+/g, ' ') // whitespace handling
     .trim()
-    .substring(0, 100); // Limit length
+    .substring(0, 100); // length of fllename
 }
 
-// Helper function to generate PDF from cover letter text
+// to generate cover letter in PDF format
 function generatePDFBuffer(coverLetter) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -194,17 +198,16 @@ function generatePDFBuffer(coverLetter) {
     doc.font('Times-Roman');
     doc.fontSize(11);
 
-    // Check if text contains bullets or bold formatting
     const hasBullets = coverLetter.match(/^[*·]\s+/m);
     const hasBold = coverLetter.includes('**');
-    
+
+    // for bulleted templates
     if (hasBullets || hasBold) {
-      // Process line by line with bullet and bold support
+      // line by line
       const lines = coverLetter.split('\n');
       let isHeaderSection = true;
       let headerLines = [];
       
-      // First pass: find all bullet points to identify the last one
       const bulletIndices = [];
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -218,54 +221,45 @@ function generatePDFBuffer(coverLetter) {
         const line = lines[i];
         const isLastBullet = (i === lastBulletIndex);
         
-        // Detect end of header (when we hit "Dear")
         if (line.trim().startsWith('Dear')) {
           isHeaderSection = false;
           
-          // Render header with full line spacing
           if (headerLines.length > 0) {
             // First line is date
             doc.text(headerLines[0], { lineGap: 0 });
             doc.moveDown(1); // Full space after date
             
-            // Name, phone, email with NO spacing between them
+            // Name, phone, email 
             for (let j = 1; j < headerLines.length; j++) {
               doc.text(headerLines[j], { lineGap: 0 });
             }
-            doc.moveDown(1); // Full space after contact info (before "Dear")
+            doc.moveDown(1); 
             headerLines = [];
           }
         }
         
-        // Accumulate header lines
         if (isHeaderSection && line.trim().length > 0) {
           headerLines.push(line.trim());
           continue;
         }
         
-        // Skip empty lines in header
         if (isHeaderSection && line.trim().length === 0) {
           continue;
         }
-        
-        // Handle empty lines (paragraph breaks) - full line spacing
-        // Skip empty line after "Sincerely," to ensure no space before name
+
         if (line.trim().length === 0) {
-          // Check if previous line was "Sincerely," - if so, skip this empty line
           if (i > 0 && lines[i-1].trim().toLowerCase().startsWith('sincerely')) {
-            continue; // Skip empty line after "Sincerely," - name should follow with 0 spacing
+            continue; 
           }
           doc.moveDown(1);
           continue;
         }
 
-        // Check if line starts with bullet
         const bulletMatch = line.match(/^([*·])\s+(.*)$/);
         
         if (bulletMatch) {
           const bulletContent = bulletMatch[2];
           
-          // Parse bold formatting and create formatted text
           const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
           let formattedParts = [];
           
@@ -285,19 +279,16 @@ function generatePDFBuffer(coverLetter) {
             }
           }
           
-          // Save X position and add indent
           const originalX = doc.x;
           doc.x = originalX + 24;
           
-          // Render bullet manually with bold support
           const startY = doc.y;
           doc.text('•', originalX + 24, startY, {
             continued: false,
             width: 20
           });
           
-          // Render text parts
-          doc.x = originalX + 44; // Position after bullet
+          doc.x = originalX + 44; 
           doc.y = startY;
           
           for (let i = 0; i < formattedParts.length; i++) {
@@ -315,16 +306,13 @@ function generatePDFBuffer(coverLetter) {
             });
           }
           
-          // End line and reset
           doc.font('Times-Roman');
           doc.x = originalX;
-          // Full line spacing after bullet point (matching DOCX 264 twips), except for the last one
           if (!isLastBullet) {
-            doc.moveDown(1); // Full line spacing to match DOCX
+            doc.moveDown(1); 
           }
           
         } else {
-          // Regular line - handle bold formatting
           const parts = line.split(/(\*\*[^*]+\*\*)/g);
           let isFirst = true;
           
@@ -346,12 +334,8 @@ function generatePDFBuffer(coverLetter) {
             doc.text(''); // End line
           }
           
-          // Check if this is "Sincerely," - next line (name) should have 0 spacing
           const isSincerelyLine = line.trim().toLowerCase().startsWith('sincerely');
           if (!isSincerelyLine) {
-            // Full line spacing after paragraphs (but not after "Sincerely,")
-            // Spacing is handled by empty lines in source, so don't add extra here
-            // Empty lines will add the spacing
           }
         }
       }
@@ -376,22 +360,20 @@ async function generateDOCXBuffer(coverLetter) {
   let isHeaderSection = true;
   let headerLines = [];
   
-  // Check if text contains bullets or bold formatting (like PDF code does)
+  // Check if text contains bullets 
   const hasBullets = coverLetter.match(/^[*·]\s+/m);
   const hasBold = coverLetter.includes('**');
   
-  // Helper to create TextRun with Times New Roman 11pt font
   const createTextRun = (text, bold = false) => {
     return new TextRun({
       text: text,
       font: "Times New Roman",
-      size: 22, // 11pt in half-points (11 * 2 = 22)
+      size: 22, 
       bold: bold
     });
   };
-  
-  // Helper to create paragraph with standard line spacing
-  // Standard single line spacing for 11pt font ≈ 13.2pt (1.2x line height) = 264 twips
+
+
   const createParagraph = (children, spacingAfter = 0, indent = null) => {
     const paraOptions = {
       children: children,
@@ -404,7 +386,6 @@ async function generateDOCXBuffer(coverLetter) {
   };
 
   if (hasBullets || hasBold) {
-    // First pass: find all bullet points to identify the last one
     const bulletIndices = [];
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -414,7 +395,7 @@ async function generateDOCXBuffer(coverLetter) {
     }
     const lastBulletIndex = bulletIndices.length > 0 ? bulletIndices[bulletIndices.length - 1] : -1;
     
-    // Process line by line with bullet and bold support (matching PDF logic)
+    // line by line
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const isLastBullet = (i === lastBulletIndex);
@@ -423,61 +404,53 @@ async function generateDOCXBuffer(coverLetter) {
       if (line.trim().startsWith('Dear')) {
         isHeaderSection = false;
         
-        // Render header with standard line spacing
         if (headerLines.length > 0) {
-          // First line is date - add blank space after date
+          
           paragraphs.push(createParagraph(
             [createTextRun(headerLines[0].trim())],
             0
           ));
-          // Add blank line after date
+          
           paragraphs.push(createParagraph(
             [createTextRun("")],
             0
           ));
           
-          // Name, phone, email with NO spacing between them
+          // Name, phone, email 
           for (let j = 1; j < headerLines.length; j++) {
             paragraphs.push(createParagraph(
               [createTextRun(headerLines[j].trim())],
-              0 // NO spacing between contact info lines
+              0
             ));
           }
           
-          // Standard line spacing after contact info (single line break)
           paragraphs.push(createParagraph(
             [createTextRun("")],
-            0 // Standard single line spacing
+            0 
           ));
           headerLines = [];
         }
-        // Continue to process the "Dear" line below (don't skip it)
       }
       
-      // Accumulate header lines
       if (isHeaderSection && line.trim().length > 0) {
         headerLines.push(line.trim());
         continue;
       }
       
-      // Skip empty lines in header
       if (isHeaderSection && line.trim().length === 0) {
         continue;
       }
       
-      // Handle empty lines (paragraph breaks) - standard single line spacing
       if (line.trim().length === 0) {
         paragraphs.push(createParagraph([createTextRun("")], 0));
         continue;
       }
 
-      // Check if line starts with bullet
       const bulletMatch = line.match(/^([*·])\s+(.*)$/);
       
       if (bulletMatch) {
         const bulletContent = bulletMatch[2];
         
-        // Parse bold formatting and create formatted text
         const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
         const textRuns = [];
         
@@ -491,26 +464,21 @@ async function generateDOCXBuffer(coverLetter) {
           }
         }
         
-        // Only add paragraph if there are text runs
         if (textRuns.length > 0) {
-          // Add bullet character and tab - tab will align all text lines at the same position
           textRuns.unshift(new Tab());
           textRuns.unshift(createTextRun("•     "));
           
-          // Bullet indented once at 24pt, text indented twice at 44pt (20pt further)
-          // All text lines (including first line) align at the tab stop position - no hanging indent
-          // Tab stops in Word are absolute from left margin
           paragraphs.push(new Paragraph({
             children: textRuns,
-            spacing: { after: isLastBullet ? 0 : 264 }, // Space between bullets, but not after last bullet
+            spacing: { after: isLastBullet ? 0 : 264 }, 
             indent: { 
-              left: 720,      // 36pt = 720 twips (where text starts)
-              hanging: 360    // 18pt = 360 twips (bullet hangs back from text)
+              left: 720,      
+              hanging: 360    
             }
           }));
         }
       } else {
-        // Regular line - handle bold formatting
+
         const parts = line.split(/(\*\*[^*]+\*\*)/g);
         const textRuns = [];
         
@@ -524,39 +492,34 @@ async function generateDOCXBuffer(coverLetter) {
           }
         }
         
-        // Only add paragraph if there are text runs
         if (textRuns.length > 0) {
           paragraphs.push(createParagraph(textRuns, 0)); // Standard line spacing
         }
       }
     }
   } else {
-    // Simple text without formatting - split by newlines and create paragraphs
-    // Still handle header spacing properly
+
     let simpleHeaderSection = true;
     let simpleHeaderLines = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       
-      // Detect end of header (when we hit "Dear")
       if (line.trim().startsWith('Dear')) {
         simpleHeaderSection = false;
         
-        // Render header with standard line spacing
         if (simpleHeaderLines.length > 0) {
-          // First line is date - add blank space after date
           paragraphs.push(createParagraph(
             [createTextRun(simpleHeaderLines[0].trim())],
             0
           ));
-          // Add blank line after date
+          
           paragraphs.push(createParagraph(
             [createTextRun("")],
             0
           ));
           
-          // Name, phone, email with NO spacing between them
+          // Name, phone, email 
           for (let j = 1; j < simpleHeaderLines.length; j++) {
             paragraphs.push(createParagraph(
               [createTextRun(simpleHeaderLines[j].trim())],
@@ -564,7 +527,6 @@ async function generateDOCXBuffer(coverLetter) {
             ));
           }
           
-          // Standard line spacing after contact info
           paragraphs.push(createParagraph(
             [createTextRun("")],
             0
@@ -573,13 +535,11 @@ async function generateDOCXBuffer(coverLetter) {
         }
       }
       
-      // Accumulate header lines
       if (simpleHeaderSection && line.trim().length > 0) {
         simpleHeaderLines.push(line.trim());
         continue;
       }
       
-      // Skip empty lines in header
       if (simpleHeaderSection && line.trim().length === 0) {
         continue;
       }
@@ -603,6 +563,7 @@ async function generateDOCXBuffer(coverLetter) {
   return await Packer.toBuffer(doc);
 }
 
+// token verify for user auth, google api OAuth
 async function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -645,6 +606,7 @@ async function verifyToken(req, res, next) {
   }
 }
 
+// to upload resume to SupaBase storage
 app.post("/upload-resume", verifyToken, upload.single("resume"), async (req, res) => {
   try {
     if (!req.userEmail) {
@@ -698,6 +660,7 @@ app.post("/upload-resume", verifyToken, upload.single("resume"), async (req, res
   }
 });
 
+// check status of resume with SupaBase
 app.get("/resume-status", verifyToken, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -722,6 +685,7 @@ app.get("/resume-status", verifyToken, async (req, res) => {
   }
 });
 
+// post request to generate cover letter
 app.post("/generate", verifyToken, async (req, res) => {
   try {
     const { jobText, templateType } = req.body;
@@ -810,11 +774,11 @@ app.post("/generate", verifyToken, async (req, res) => {
       return res.status(500).json({ error: "No text returned from Gemini" });
     }
 
-    // Extract metadata for filename
+    // Extract info for file name
     const candidateName = await extractCandidateName(resumeText);
     const jobInfo = await extractJobInfo(jobText);
 
-    // Return cover letter text and metadata as JSON
+    // Return cover letter text and data in json format
     res.json({ 
       success: true, 
       coverLetter,
@@ -832,6 +796,7 @@ app.post("/generate", verifyToken, async (req, res) => {
   }
 });
 
+// post request to generate cover letter in PDF format
 app.post("/generate-pdf", verifyToken, async (req, res) => {
   try {
     const { coverLetter, metadata } = req.body;
@@ -842,13 +807,13 @@ app.post("/generate-pdf", verifyToken, async (req, res) => {
 
     const pdfBuffer = await generatePDFBuffer(coverLetter);
 
-    // Generate filename from metadata: {Name} - {Company} {Position}.pdf
+    // Generate filename from metadata and logic as previously shown
     let filename = "cover-letter.pdf";
     if (metadata && metadata.candidateName && metadata.company && metadata.position) {
       const name = sanitizeFilename(metadata.candidateName);
       const company = sanitizeFilename(metadata.company);
       const position = sanitizeFilename(metadata.position);
-      // Only use custom filename if we have real values (not defaults)
+      
       if (name !== "Candidate" && company !== "Company" && position !== "Position") {
         filename = `${name} - ${company} ${position}.pdf`;
       }
@@ -865,6 +830,7 @@ app.post("/generate-pdf", verifyToken, async (req, res) => {
   }
 });
 
+// post request to generate cover letter in DOCX format
 app.post("/generate-docx", verifyToken, async (req, res) => {
   try {
     const { coverLetter, metadata } = req.body;
@@ -875,13 +841,13 @@ app.post("/generate-docx", verifyToken, async (req, res) => {
 
     const docxBuffer = await generateDOCXBuffer(coverLetter);
 
-    // Generate filename from metadata: {Name} - {Company} {Position}.docx
+    // Generate filename from previously shown logic
     let filename = "cover-letter.docx";
     if (metadata && metadata.candidateName && metadata.company && metadata.position) {
       const name = sanitizeFilename(metadata.candidateName);
       const company = sanitizeFilename(metadata.company);
       const position = sanitizeFilename(metadata.position);
-      // Only use custom filename if we have real values (not defaults)
+
       if (name !== "Candidate" && company !== "Company" && position !== "Position") {
         filename = `${name} - ${company} ${position}.docx`;
       }
@@ -898,6 +864,7 @@ app.post("/generate-docx", verifyToken, async (req, res) => {
   }
 });
 
+// server running on port 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
