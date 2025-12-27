@@ -9,25 +9,34 @@ RULE 4: Use simple, concise language - sound HUMAN, not like AI listing things
 RULE 5: NEVER use em dashes (—) anywhere in the letter
 RULE 6: Simplify role names to their logical form (e.g., "Summer Technology/Developer" becomes "Summer Developer")
 RULE 7: Write naturally and conversationally - avoid formulaic or robotic phrasing
+RULE 8: MAXIMUM ONE STATISTIC in paragraph 2, and ONLY if directly relevant to job requirements
+RULE 9: Keep sentences SHORT - if a sentence has 3+ commas or goes past 25 words, break it up
+RULE 10: NEVER mention graduation date or year
 
 ===== FORBIDDEN ACTIONS =====
 ❌ NEVER sound like you're listing qualifications robotically
 ❌ NEVER use overly complex or verbose language
 ❌ NEVER add extra blank lines - use ONLY single line breaks between sections
 ❌ NEVER use em dashes (—) - use commas or periods instead
-❌ NEVER copy exact sentences from the resume word-for-word
+❌ NEVER copy exact sentences from the resume word-for-word (rephrase everything)
 ❌ NEVER list many technologies - focus on 2-3 most relevant ones
 ❌ NEVER start consecutive sentences with the same structure or word
 ❌ NEVER use phrases like "Additionally," "Furthermore," "Moreover," "In addition,"
 ❌ NEVER write sentences that feel disconnected - each should flow into the next
 ❌ NEVER use transition words that sound academic or formal
+❌ NEVER recite the company's mission statement or values from their website
+❌ NEVER use vague praise like "innovative," "cutting-edge," "world-class" without specifics
+❌ NEVER include multiple statistics - pick ONE max, and only if highly relevant to the job
+❌ NEVER restate resume content - completely rephrase in natural language
+❌ NEVER write run-on sentences with multiple clauses separated by commas
+❌ NEVER mention graduation date or expected graduation year
 
 ===== REQUIRED APPROACH =====
 ✅ Write like a real person having a conversation
 ✅ Use the full role title once, then shorten it naturally (e.g., "Summer Developer" → "developer")
-✅ In paragraph 2: Focus deeply on 2-3 key overlapping technologies, rephrase resume experiences
-✅ In paragraph 3: Talk MORE about the company, LESS about yourself
-✅ Keep sentences short and direct
+✅ In paragraph 2: Focus on 2-3 key technologies + MAXIMUM ONE metric (only if very relevant) + mention collaboration naturally
+✅ In paragraph 3: Pick ONE specific thing about the company and dive into it - don't list multiple things
+✅ Keep sentences short and direct - if you need 3+ commas, use multiple sentences instead
 ✅ Be conversational, not formal or stiff
 
 ===== FLOW AND TRANSITIONS =====
@@ -42,8 +51,10 @@ RULE 7: Write naturally and conversationally - avoid formulaic or robotic phrasi
 Job Posting:
 {{JOB_TEXT}}
 
-Resume (FOR REFERENCE ONLY - USE FOR INSPIRATION):
+Resume (REFERENCE - DO NOT COPY VERBATIM):
 {{RESUME_TEXT}}
+
+Note: The resume provides experiences and achievements to draw from, but you must REPHRASE everything in your own words. Never lift exact sentences from the resume. Transform resume bullet points into natural, conversational sentences that tell a story.
 
 ===== EXACT OUTPUT FORMAT =====
 
@@ -57,42 +68,159 @@ Output the cover letter with this EXACT spacing pattern (where each line of text
 
 Dear [Hiring manager name OR "Hiring Manager"],
 
-I am writing to express my interest in the [simplified role title - make it logical and concise] position at [company name]. As a [field of study] student at [university], I am excited about the opportunity to contribute to your team and gain valuable experience in the field.
+[OPENING PARAGRAPH - STANDARD FORMAT WITH PUNCHY SECOND SENTENCE]
+Two sentences following this exact structure:
+
+SENTENCE 1 (Standard opening):
+"I am writing to express my interest in the [simplified role title] position at [company name]."
+
+CRITICAL - ROLE TITLE SIMPLIFICATION:
+✅ Apply the Role Title Simplification Rules above
+✅ Make it sound natural - move qualifiers before the core title
+✅ Remove commas, dashes, and parentheses
+
+Examples:
+- Job posting says "Software Developer Intern, Backend" → Write "Backend Developer Intern"
+- Job posting says "Engineer - Full Stack" → Write "Full Stack Engineer"
+
+SENTENCE 2 (Punchy background + concrete experience):
+"As a [field of study - include dual major if applicable] student at [university] who [concrete but general accomplishment/experience], I'm excited to [contribute to company OR bring this experience to role]."
+
+CRITICAL - FIELD OF STUDY EXTRACTION:
+⚠️ DO NOT assume "Computer Science and Finance" - extract the ACTUAL field(s) of study from the resume
+✅ Look for: Education section, degree program, major/minor information in the resume
+✅ If dual major/minor exists in resume, mention both (e.g., "Computer Science and Business student")
+✅ If only one major exists in resume, mention only that one (e.g., "Computer Science student")
+✅ Use the EXACT field names from the resume, don't invent or assume
+
+Examples based on what's ACTUALLY in the resume:
+- Resume shows "Computer Science and Finance" → "Computer Science and Finance student"
+- Resume shows "Computer Science" only → "Computer Science student"
+- Resume shows "Software Engineering" → "Software Engineering student"
+- Resume shows "Business Administration" → "Business Administration student"
+- Resume shows "Mechanical Engineering and Physics" → "Mechanical Engineering and Physics student"
+
+CRITICAL - SECOND SENTENCE RULES:
+✅ Must extract actual field(s) of study from resume - DO NOT assume CS + Finance
+✅ Mention dual major/background ONLY if it actually exists in the resume
+✅ Include ONE concrete but general accomplishment (e.g., "built backend systems that handle thousands of orders," "developed APIs for government services")
+✅ Keep the accomplishment HIGH-LEVEL, not overly specific (don't mention specific technical details like "designed databases" - save for paragraph 2)
+✅ End with excitement about the role or company
+✅ Keep it concise - under 25 words for sentence 2
+✅ NEVER mention graduation date
+
+Good Examples of Complete Opening Paragraphs (showing different fields of study):
+
+Example 1 (CS + Finance dual major):
+"I am writing to express my interest in the Backend Developer Intern position at Robinhood. As a Computer Science and Finance student at Waterloo who's built backend systems handling thousands of daily transactions, I'm excited to bring this experience to your team."
+
+Example 2 (CS only):
+"I am writing to express my interest in the Software Engineer Intern position at Stripe. As a Computer Science student at Waterloo who's developed APIs and microservices for enterprise applications, I'm eager to contribute to your payments infrastructure."
+
+Example 3 (Software Engineering):
+"I am writing to express my interest in the Backend Developer role at Shopify. As a Software Engineering student at Waterloo who's spent the past year building database-driven services, I'd love to apply this experience to your e-commerce platform."
+
+Example 4 (Engineering + Math dual major):
+"I am writing to express my interest in the Data Engineer Intern position at Meta. As a Computer Engineering and Mathematics student at MIT who's built data pipelines processing millions of records, I'm eager to contribute to your infrastructure team."
+
+Bad Examples:
+
+Bad Example 1:
+"I am writing to express my interest in the Backend Developer Intern position at Robinhood. I'm a Computer Science and Finance student at the University of Waterloo, graduating in 2027, and I've consistently built robust backend systems that handle significant data volumes and critical operations." [Mentions grad date, too wordy, uses AI phrases like "robust," "consistently," "significant data volumes"]
+
+Bad Example 2:
+"I am writing to express my interest in the Backend Developer Intern position at Robinhood. As a Computer Science and Finance student at Waterloo who developed a full-stack ERP product including its core relational database design, I'm excited to contribute to your mission of democratizing finance." [Too specific about one narrow technical detail, recites company mission statement]
+
+Bad Example 3:
+"I am writing to express my interest in the Backend Developer Intern position at Robinhood. As a Computer Science student at Waterloo, I am excited about the opportunity to contribute to your team and gain valuable experience in the field." [Not punchy, doesn't mention dual major, doesn't include concrete experience, generic "gain valuable experience"]
 
 [PARAGRAPH 2 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
-FOCUS: Deep dive on 2-3 key overlapping technologies with natural flow
+FOCUS: 2-3 key technologies that match job posting + MAXIMUM ONE highly relevant metric + collaboration naturally woven in
+
+CRITICAL STATISTICS RULE:
+- Use MAXIMUM ONE statistic in this entire paragraph
+- Only include a statistic if it's DIRECTLY relevant to what the job posting asks for
+- If the job emphasizes performance/speed, use a performance metric
+- If the job emphasizes scale, use a scale metric
+- If no statistic is highly relevant, DON'T include any - just describe the work
+- DO NOT list multiple statistics like "eliminated 300 hours," "built 10 endpoints," "reduced by 20%" all together
 
 Instructions:
 - Identify the 2-3 MOST important technologies that appear in BOTH the job posting AND resume
-- Tell a mini-story about your experience - don't just state facts
-- Let each sentence flow naturally into the next - avoid choppy, disconnected statements
+- Include MAXIMUM ONE metric, and only if it directly relates to job requirements
+- DO NOT restate resume bullet points - completely rephrase into natural storytelling
+- Naturally mention cross-team collaboration, presenting work, or explaining technical concepts
+- Tell a mini-story about your experience - don't list accomplishments
+- Let each sentence flow naturally into the next
 - Use "and," "while," "which" to connect ideas smoothly
-- Vary sentence length - mix shorter and longer sentences
-- Connect this experience to what the role needs without saying "This aligns with..." or "This matches..."
+- Show your work through natural description, not stats
+- Vary sentence length naturally
 - Keep under 105 words
 
-Better Example: "I noticed the role involves React and Python, which I've been working with pretty extensively. At [Company], I built several web applications where I used React to create responsive interfaces while handling the backend with Python. The Python work was mainly for data processing and API development, and I got comfortable moving between frontend and backend tasks. This full-stack experience seems like it'd translate well to what you're building at [Company], especially with [specific project/product if known]."
+Good Example: "I've spent most of my internships working with Python and PostgreSQL to build backend services. At BTNX, I designed the database architecture for an automation system and wrote the API layer that connected it to the frontend. The work involved optimizing queries to handle high traffic and collaborating with the data science team to integrate their ML models. I also spent time explaining the system architecture to stakeholders who needed to understand how everything fit together. This kind of backend work, especially the database and API design, seems like exactly what you need."
 
-Avoid: "I have experience with React. I also worked with Python. Additionally, I developed web applications. Furthermore, I created APIs. This aligns with your requirements."
+Bad Example: "I've spent a lot of time working with Python, SQL, and Redis. At BTNX, I developed an automation microservice in C# and built over ten API endpoints, which eliminated 300 hours of manual work per year. I also used Redis to introduce caching and cut page load times by 20%." [This lists multiple stats and restates resume]
 
 [PARAGRAPH 3 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
-FOCUS: What the COMPANY is doing (60-70% about company, 30-40% about you) - with natural flow
+FOCUS: Pick ONE specific thing about the company and explore it deeply (NOT a list of things)
+
+CRITICAL STRUCTURE RULE:
+- This paragraph should have a CLEAR focus on ONE specific aspect of the company
+- DO NOT list multiple things (e.g., "I'm excited about X, Y, and Z")
+- Pick ONE: a specific product, a technical challenge they're solving, a recent development, or their approach to a problem
+- Explore WHY that one thing excites you and how it connects to your interests
+- Keep sentences SHORT - break up any sentence with 3+ commas or 25+ words
+- Maximum 3-4 sentences total
 
 Instructions:
-- Start with what drew you to the company - specific product, mission, or recent development
-- Show genuine interest, not generic praise
-- Let your enthusiasm come through naturally, not formally
-- Connect their work to your values/work style without explicitly saying "I value..." or "My values align..."
-- Use natural connectors to tie sentences together
-- Avoid formal transition words - write like you're talking to someone
+- Choose ONE specific thing to focus on:
+  * A specific product or feature (e.g., crypto wallet, trading platform)
+  * A technical challenge mentioned in the job posting (e.g., high-frequency trading, scale)
+  * A recent news item or blog post
+  * Their tech stack approach to a specific problem
+- Explain what draws you to that ONE thing
+- Connect it to either your technical interests OR your career goals (pick one, not both)
+- Keep it genuine and conversational
+- Use SHORT sentences - no run-ons with multiple clauses
 - Keep under 105 words
 
-Better Example: "I've been following [Company]'s work on [specific product/initiative], and the way you're approaching [challenge] really stands out. The recent [news/development] showed me you're serious about [value/mission], which is exactly the kind of environment where I do my best work. I've always gravitated toward teams that are solving meaningful problems collaboratively, and from everything I've read, that seems to be what you've built here."
+Good Example (focused on ONE thing): 
+"I've been following Robinhood's crypto wallet development and the engineering challenges around transaction speed. The blog post on optimizing the order matching engine was fascinating, especially the approach to handling microsecond-level latency. This kind of performance-critical backend work is exactly what I want to learn. My CS and Finance background makes me particularly interested in how the technical architecture decisions directly impact trading outcomes for users."
 
-Avoid: "I am impressed by [Company]. Additionally, I value collaboration. Furthermore, I align with your mission. Moreover, I want to contribute."
+Another Good Example (focused on ONE thing):
+"What really draws me to Robinhood is the chance to work on financial infrastructure that millions of people depend on daily. The scale and reliability requirements for a trading platform are unlike typical web apps. Building systems where downtime directly affects people's financial decisions would push me to write much more careful, thoughtful code. This intersection of high-stakes engineering and real user impact is what I'm looking for in an internship."
 
-I am confident that my [2-3 general skills that match job] and strong work ethic would make me a valuable asset to [company - use shortened name if appropriate]. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application.
+Bad Example (listing multiple things):
+"What truly excites me about Robinhood is your mission to democratize finance, especially given the scale of assets involved in the coming wealth transfer. Building backend systems with stringent correctness and scalability for financial products is a unique challenge. I am eager to learn how Robinhood tackles these complex engineering problems. My dual background in Computer Science and Finance makes me particularly keen to understand the inner workings of financial systems." [Lists multiple things, uses generic mission statement language]
 
+[CLOSING PARAGRAPH - CRITICAL FORMAT]
+MANDATORY FORMAT: "I am confident that my [skill 1], [skill 2], and strong work ethic would make me a valuable asset to [company]. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application."
+
+CRITICAL RULES FOR SKILLS:
+❌ NEVER list specific technologies (e.g., "Python and PostgreSQL skills")
+❌ NEVER list only technical skills
+✅ ALWAYS include "strong work ethic" as the final item before "would make me"
+✅ Include 2 soft/transferable skills OR 1 broad technical area + 1 soft skill
+
+SKILL SELECTION GUIDE:
+Choose from these types of skills (pick 2 that are most relevant):
+- Broad technical areas: "backend development experience", "full-stack capabilities", "technical problem-solving abilities"
+- Collaboration: "ability to work effectively across teams", "collaborative approach", "teamwork skills"
+- Communication: "communication skills", "ability to explain technical concepts"
+- Work style: "attention to detail", "adaptability", "fast learning abilities"
+- Domain knowledge: "understanding of financial systems" (if CS + Finance), "business acumen"
+
+Good Examples:
+"I am confident that my backend development experience, collaborative approach, and strong work ethic would make me a valuable asset to Robinhood. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application."
+
+"I am confident that my problem-solving abilities, communication skills, and strong work ethic would make me a valuable asset to Stripe. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application."
+
+"I am confident that my technical skills, ability to work across teams, and strong work ethic would make me a valuable asset to Shopify. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application."
+
+Bad Examples:
+"I am confident that my Python and PostgreSQL skills would make me a valuable asset to Robinhood." [Too specific, no soft skills, missing "strong work ethic"]
+
+"I am confident that my coding abilities and debugging skills would make me a valuable asset to Google." [Only technical, missing "strong work ethic"]
 Sincerely,
 [Full name]
 
@@ -106,21 +234,32 @@ Line 5: Email
 Line 6: (blank)
 Line 7: Dear...
 Line 8: (blank)
-Line 9-11: Opening paragraph
-Line 12: (blank)
-Line 13-17: Second paragraph (2-3 KEY TECHNOLOGIES, explained naturally)
-Line 18: (blank)
-Line 19-23: Third paragraph (MOSTLY about company, some soft skills connection)
-Line 24: (blank)
-Line 25-27: Closing paragraph
-Line 28: (blank)
-Line 29: Sincerely,
-Line 30: Name
+Line 9-10: Opening paragraph (2 sentences: standard + punchy)
+Line 11: (blank)
+Line 12-16: Second paragraph (2-3 KEY TECHNOLOGIES + MAX ONE METRIC if relevant + collaboration)
+Line 17: (blank)
+Line 18-22: Third paragraph (ONE focused topic, SHORT sentences, 90-105 words)
+Line 23: (blank)
+Line 24-26: Closing paragraph
+Line 27: (blank)
+Line 28: Sincerely,
+Line 29: Name
 
 ===== FINAL CHECKPOINT =====
 Before outputting, COUNT and verify:
-□ Paragraph 2 is 90-105 words - focuses on 2-3 key technologies, rephrased naturally
-□ Paragraph 3 is 90-105 words - 60%+ about company, shows research
+□ Opening sentence 1 follows exact format: "I am writing to express my interest in the [role] position at [company]."
+□ Opening sentence 2 mentions field(s) of study extracted from the ACTUAL resume (not assumed)
+□ Opening sentence 2 mentions dual major ONLY if dual major actually exists in resume□ Opening sentence 2 includes ONE concrete but general accomplishment (high-level, not overly specific)
+□ Opening sentence 2 is under 25 words
+□ Opening DOES NOT mention graduation date or year
+□ Opening avoids AI phrases: "significant data volumes," "critical operations," "robust," "consistently"
+□ Paragraph 2 has MAXIMUM ONE statistic (or zero if none are highly relevant to job)
+□ Paragraph 2 does NOT restate resume content - everything is rephrased naturally
+□ Paragraph 2 is 90-105 words - focuses on 2-3 key technologies + mentions collaboration naturally
+□ Paragraph 3 focuses on ONE specific thing (not a list of multiple things)
+□ Paragraph 3 has SHORT sentences - no sentence has 3+ commas or 25+ words
+□ Paragraph 3 is 90-105 words - deep focus on one aspect of the company
+□ Closing mentions working across teams or similar soft skill implicitly
 □ Total is 250-300 words
 □ Role title simplified appropriately (full first time, shortened after)
 □ Sounds like a real human writing, not AI listing things
@@ -132,3 +271,6 @@ Before outputting, COUNT and verify:
 □ No formal transitions like "Additionally," "Furthermore," "Moreover"
 □ Sentences flow smoothly into each other - no choppy, disconnected statements
 □ Varies between shorter and longer sentences naturally
+□ No generic company praise - only specific references to products/tech/developments
+□ Communication/collaboration skills woven in naturally (not stated explicitly)
+□ Comes across as well-rounded, not just a CS student (through dual major mention or cross-functional interest)

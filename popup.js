@@ -52,8 +52,8 @@ templateCards.forEach(card => {
 
 // API URL configuration - uses production URL in deployed extension, localhost in development
 // Production URL should be set in config.js or via Chrome storage
-let API_URL = "https://applypilot-server-992595212896.us-central1.run.app"; // For prod
-//let API_URL = "http://localhost:3000";  // For testing locally
+//let API_URL = "https://applypilot-server-992595212896.us-central1.run.app"; // For prod
+let API_URL = "http://localhost:3000";  // For testing locally
 
 // Try to get API URL from storage (allows remote updates)
 chrome.storage.sync.get(['apiUrl'], (result) => {
@@ -125,7 +125,10 @@ function generateFilename(extension = "pdf") {
     const name = currentMetadata.candidateName.replace(/[<>:"/\\|?*]/g, '').trim();
     const company = currentMetadata.company.replace(/[<>:"/\\|?*]/g, '').trim();
     const position = currentMetadata.position.replace(/[<>:"/\\|?*]/g, '').trim();
-    return `${name} - ${company} ${position}.${extension}`;
+    // Only use custom filename if we have real values (not defaults from failed extraction)
+    if (name !== "Candidate" && company !== "Company" && position !== "Position") {
+      return `${name} - ${company} ${position}.${extension}`;
+    }
   }
   return `cover-letter.${extension}`;
 }
