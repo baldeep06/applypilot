@@ -1,3 +1,5 @@
+// JS popup.js logic to control UI and functionality of the popup.html file
+
 const signInBtn = document.getElementById("signInBtn");
 const userIconBtn = document.getElementById("userIconBtn");
 const userMenu = document.getElementById("userMenu");
@@ -23,50 +25,48 @@ let currentCoverLetter = null;
 let currentMetadata = null;
 let savedButtonText = "Generate"; // Store the button text to restore after loading
 
-// Template selection
+// user template selection
 let selectedTemplate = "default";
 let lastGeneratedTemplate = null;
 const templateCards = document.querySelectorAll(".template-card");
 templateCards.forEach(card => {
   card.addEventListener("click", () => {
-    // Remove selected class from all cards
+
     templateCards.forEach(c => c.classList.remove("selected"));
-    // Add selected class to clicked card
+    
     card.classList.add("selected");
-    // Update selected template
+    // Update selected template based on the clicked card
     const newTemplate = card.getAttribute("data-template");
     selectedTemplate = newTemplate;
     
-    // Reset button text if template changed
+    // if template is altered provide a resest button
     if (lastGeneratedTemplate !== null && lastGeneratedTemplate !== newTemplate) {
       setButtonText("Generate");
-      // Hide preview and download buttons when switching to a different template
+      // when template is being switched, hide the preview and download buttons - no cover letter
       downloadSectionWrapper.style.display = "none";
     } else if (lastGeneratedTemplate === newTemplate) {
       setButtonText("Regenerate");
-      // Show preview and download buttons when switching back to the generated template
+      // when back to a generated template thru regenerate, bring back preview and download buttons
       downloadSectionWrapper.style.display = "block";
     }
   });
 });
 
-// API URL configuration - uses production URL in deployed extension, localhost in development
-// Production URL should be set in config.js or via Chrome storage
-let API_URL = "https://applypilot-server-992595212896.us-central1.run.app"; // For prod
-//let API_URL = "http://localhost:3000";  // For testing locally
+// API URL connecting to server backend - hosted on cloud resources for production
+//let API_URL = "https://applypilot-server-992595212896.us-central1.run.app"; 
+let API_URL = "http://localhost:3000";  // an alternate URL connection for local development
 
-// Try to get API URL from storage (allows remote updates)
+// updating server URL via chrome
 chrome.storage.sync.get(['apiUrl'], (result) => {
   if (result.apiUrl) {
     API_URL = result.apiUrl;
   }
-  // If not in storage, keep the default localhost:3000 for development
-  // To use a production server, set 'apiUrl' in Chrome storage or update the default above
+
 });
 
 let currentUser = null;
 
-// Helper function to get a fresh token (handles refresh automatically)
+// produce a fresh token for the user's process
 async function getAuthToken() {
   return new Promise((resolve, reject) => {
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
@@ -86,11 +86,11 @@ function setStatus(msg, type = "") {
   statusEl.className = type;
 }
 
-// Helper functions to manage button loading state
+// state management for button load
 function setButtonLoading(isLoading) {
   const buttonTextEl = generateBtn.querySelector('.button-text');
   if (isLoading) {
-    // Save current text and set to "Generating"
+    // change state to generating and save text
     if (buttonTextEl) {
       savedButtonText = buttonTextEl.textContent;
       buttonTextEl.textContent = "Generating";
@@ -98,7 +98,8 @@ function setButtonLoading(isLoading) {
     generateBtn.classList.add('loading');
     generateBtn.disabled = true;
   } else {
-    // Restore saved text
+
+    // change state to generated and restore text
     if (buttonTextEl) {
       buttonTextEl.textContent = savedButtonText;
     }
@@ -119,7 +120,8 @@ function setButtonText(text) {
   }
 }
 
-// Helper function to generate filename from metadata
+// Function to generate file name for cover letter based on data from the application and user
+// variables: candidate name, company name, and position name
 function generateFilename(extension = "pdf") {
   if (currentMetadata && currentMetadata.candidateName && currentMetadata.company && currentMetadata.position) {
     const name = currentMetadata.candidateName.replace(/[<>:"/\\|?*]/g, '').trim();
@@ -156,9 +158,10 @@ function updateUI() {
   }
 }
 
+// checking in on the resume status
 async function checkResumeStatus() {
   try {
-    // Get fresh token (Chrome API handles refresh automatically)
+    // produce a fresh token for the user's process
     const token = await getAuthToken();
     
     const response = await fetch(`${API_URL}/resume-status`, {
@@ -167,7 +170,7 @@ async function checkResumeStatus() {
       }
     });
     
-    // If token expired, remove cache and retry once
+    // If token expired, remove cache, retry once again
     if (response.status === 401) {
       chrome.identity.removeCachedAuthToken({ token }, async () => {
         try {
@@ -192,10 +195,12 @@ async function checkResumeStatus() {
       return;
     }
     
+    // if resume is found, update the UI with the file name
     const data = await response.json();
     if (data.hasResume) {
       resumeFileBtn.textContent = "Update file";
       resumeFileName.textContent = data.filename;
+    // handling the case where no resume is found
     } else {
       resumeFileBtn.textContent = "Choose File";
       resumeFileName.textContent = "No file chosen";
@@ -210,7 +215,7 @@ resumeFileBtn.addEventListener("click", () => {
   resumeInput.click();
 });
 
-// Sign in with Google
+// Google sign in button and authentication (sign in with google)
 signInBtn.addEventListener("click", () => {
   chrome.identity.getAuthToken({ interactive: true }, async (token) => {
     if (chrome.runtime.lastError) {
@@ -224,7 +229,7 @@ signInBtn.addEventListener("click", () => {
       return;
     }
 
-    // Get user info from Google
+    // Google OAuth - user login with help of Google
     const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -235,7 +240,7 @@ signInBtn.addEventListener("click", () => {
       token: token
     };
 
-    // Save to chrome storage
+    // Save to Chrome SupeBase relational DB
     chrome.storage.local.set({ user: currentUser });
     updateUI();
     setStatus("", "");
@@ -261,7 +266,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Sign out
+// Sign out button, secured by Google
 userMenuSignOut.addEventListener("click", () => {
   chrome.identity.getAuthToken({ interactive: false }, (token) => {
     if (token) {
@@ -277,7 +282,7 @@ userMenuSignOut.addEventListener("click", () => {
   });
 });
 
-// Upload resume
+// Upload resume to extension for processing
 resumeInput.addEventListener("change", async () => {
   const file = resumeInput.files?.[0];
   if (!file) return;
@@ -291,6 +296,7 @@ resumeInput.addEventListener("change", async () => {
     // Get fresh token
     let token = await getAuthToken();
     
+    // post request, send resume to server
     let response = await fetch(`${API_URL}/upload-resume`, {
       method: "POST",
       headers: {
@@ -299,7 +305,7 @@ resumeInput.addEventListener("change", async () => {
       body: formData
     });
 
-    // If token expired, refresh and retry once
+    // If token expired, refresh and retry 
     if (response.status === 401) {
       chrome.identity.removeCachedAuthToken({ token }, async () => {
         token = await getAuthToken();
@@ -317,6 +323,8 @@ resumeInput.addEventListener("change", async () => {
           // Update UI immediately
           resumeFileBtn.textContent = "Update file";
           resumeFileName.textContent = data.filename || "resume.pdf";
+
+          // if unable to upload resume
         } else {
           let errorMsg = "Failed to upload resume";
           try {
@@ -332,6 +340,7 @@ resumeInput.addEventListener("change", async () => {
       return;
     }
 
+    // further error handling with erroneous resume upload 
     if (response.ok) {
       const data = await response.json();
       setStatus("", "");
@@ -349,6 +358,7 @@ resumeInput.addEventListener("change", async () => {
       console.error("Upload error:", errorMsg, response.status);
       setStatus(`❌ ${errorMsg}`);
     }
+  // if unable to upload due to server connection issues - provide UI error message
   } catch (err) {
     console.error("Upload error:", err);
     if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
@@ -367,12 +377,12 @@ generateBtn.addEventListener("click", async () => {
     currentCoverLetter = null;
     currentMetadata = null;
     
-    // Reset button text if template changed
+    // if template is changed or another is selected, reset the button text
     if (lastGeneratedTemplate !== null && lastGeneratedTemplate !== selectedTemplate) {
       setButtonText("Generate");
     }
     
-    // Clear any previous status messages (but keep errors visible)
+    // Clear previous status messages
     setStatus("", "");
 
     const [tab] = await chrome.tabs.query({
@@ -380,6 +390,7 @@ generateBtn.addEventListener("click", async () => {
       currentWindow: true
     });
 
+    // UI error message if no active tab found
     if (!tab?.id) {
       setStatus("❌ No active tab found.", "error");
       return;
@@ -414,7 +425,7 @@ generateBtn.addEventListener("click", async () => {
           body: JSON.stringify({ jobText, templateType })
         });
 
-        // If token expired, refresh and retry once
+        // If token expired, refresh and retry
         if (response.status === 401) {
           chrome.identity.removeCachedAuthToken({ token }, async () => {
             token = await getAuthToken();
@@ -427,6 +438,7 @@ generateBtn.addEventListener("click", async () => {
               body: JSON.stringify({ jobText, templateType })
             });
             
+            // if unable to generate cover letter
             if (!response.ok) {
               const errText = await response.text();
               setStatus("❌ Error: " + errText, "error");
@@ -462,6 +474,8 @@ generateBtn.addEventListener("click", async () => {
         }
 
         const data = await response.json();
+
+        // if cover letter is generated successfully, update the UI to indicate, regnerate, download
         if (data.success && data.coverLetter) {
           currentCoverLetter = data.coverLetter;
           currentMetadata = data.metadata || null;
@@ -484,7 +498,7 @@ generateBtn.addEventListener("click", async () => {
   }
 });
 
-// Download PDF
+// Download PDF button
 downloadPdfBtn.addEventListener("click", async () => {
   if (!currentCoverLetter) {
     setStatus("❌ No cover letter available. Please generate one first.", "error");
@@ -527,7 +541,7 @@ downloadPdfBtn.addEventListener("click", async () => {
         }
         
         const blob = await response.blob();
-        // Extract filename from Content-Disposition header
+        // Based on metadata used to get the file name above, extract and assign here
         const contentDisposition = response.headers.get('Content-Disposition');
         let filename = generateFilename("pdf");
         if (contentDisposition) {
@@ -655,7 +669,9 @@ viewBtn.addEventListener("click", async () => {
   }
 });
 
-// Close PDF modal
+// PDF preview popup
+
+// Close PDF preview
 pdfModalClose.addEventListener("click", () => {
   pdfModalOverlay.classList.remove("active");
   // Clean up the object URL to free memory
@@ -665,7 +681,7 @@ pdfModalClose.addEventListener("click", () => {
   }
 });
 
-// Close modal when clicking outside the container
+// Close PDF preview when clicking outside the popup container 
 pdfModalOverlay.addEventListener("click", (e) => {
   if (e.target === pdfModalOverlay) {
     pdfModalOverlay.classList.remove("active");
@@ -677,7 +693,7 @@ pdfModalOverlay.addEventListener("click", (e) => {
   }
 });
 
-// Close modal with Escape key
+// Close PDF preview with Escape key
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && pdfModalOverlay.classList.contains("active")) {
     pdfModalOverlay.classList.remove("active");
@@ -689,7 +705,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Download DOCX
+// Download DOCX logic
 downloadDocxBtn.addEventListener("click", async () => {
   if (!currentCoverLetter) {
     setStatus("❌ No cover letter available. Please generate one first.", "error");
@@ -732,7 +748,7 @@ downloadDocxBtn.addEventListener("click", async () => {
         }
         
         const blob = await response.blob();
-        // Extract filename from Content-Disposition header
+        // using logic pulled from above for the file name
         const contentDisposition = response.headers.get('Content-Disposition');
         let filename = generateFilename("docx");
         if (contentDisposition) {
@@ -763,7 +779,7 @@ downloadDocxBtn.addEventListener("click", async () => {
     }
 
     const blob = await response.blob();
-    // Extract filename from Content-Disposition header
+    // Extract filename from above logic
     const contentDisposition = response.headers.get('Content-Disposition');
     let filename = generateFilename("docx");
     if (contentDisposition) {
@@ -815,11 +831,11 @@ themeToggleBtn.addEventListener("click", () => {
 // Load theme on page load
 loadTheme();
 
-// Ensure user menu is closed on page load
+// Making sure that the user menu is closed on page load
 userMenu.classList.remove("active");
 userIconBtn.classList.remove("active");
 
-// Check if user is already signed in
+// Check if user is already signed in to extension
 chrome.storage.local.get("user", (data) => {
   if (data.user) {
     currentUser = data.user;
