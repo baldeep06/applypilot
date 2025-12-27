@@ -54,8 +54,8 @@ templateCards.forEach(card => {
 
 // API URL configuration - uses production URL in deployed extension, localhost in development
 // Production URL should be set in config.js or via Chrome storage
-//let API_URL = "https://applypilot-server-992595212896.us-central1.run.app"; // For prod
-let API_URL = "http://localhost:3000";  // For testing locally
+let API_URL = "https://applypilot-server-992595212896.us-central1.run.app"; // For prod
+//let API_URL = "http://localhost:3000";  // For testing locally
 
 // updating server URL via chrome
 chrome.storage.sync.get(['apiUrl'], (result) => {
