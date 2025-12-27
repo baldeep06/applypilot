@@ -129,12 +129,22 @@ IMPORTANT RULES:
    - "Microsoft Azure Cloud Solutions" → "Microsoft"
    - "TD Bank Capital Markets Division" → "TD Bank"
 
-2. For position/job title: Extract the actual job title or role name. Keep it concise but descriptive.
-   Examples:
-   - "Software Developer"
-   - "Data Analyst"
-   - "Product Manager"
-   - "Software Engineer Intern"
+2. For position/job title: Extract ONLY the core, standardized job title. This is critical for filename generation.
+   
+   EXTRACTION RULES:
+   - Extract the PRIMARY job title/role name - the essential role identifier
+   - Remove technical stack qualifiers that appear before the main title (e.g., "Backend", "Frontend", "Full Stack" if redundant)
+   - Remove team names, department names, location details, work type (Remote, Hybrid, Full-time)
+   - Keep it concise: typically 2-4 words - just the essential role name
+   - Standardize common variations (e.g., "Developer" and "Engineer" are often interchangeable, choose the most common form)
+   
+   CRITICAL EXAMPLES - follow these patterns exactly:
+   - "Software Developer Intern, Backend" → "Software Developer Intern, Backend"
+   - "Data Analyst, Remote" → "Data Analyst"
+   - "Product Manager - Consumer Products" → "Product Manager"
+   - "Full Stack Engineer, Frontend Focus" → "Full Stack Engineer" (keep "Full Stack" as it's part of the title, remove ", Frontend Focus")
+   
+   Think: What is the core role name that would appear on a business card or resume? Extract that and nothing more.
 
 Job posting:
 ${jobText.substring(0, 2000)}
@@ -159,10 +169,20 @@ Example format: {"company": "RBC", "position": "Software Developer"}`;
       // Take only the first meaningful part (before common separators like dash, comma for departments)
       company = company.split(/[-–—,]/)[0].trim();
       
-      // the formatted job info
+      // Clean up position name - safety net to remove qualifiers that might have slipped through
+      let position = (jobInfo.position || "Position").trim();
+      // Remove everything after comma (qualifiers like ", Backend", ", Remote", ", Full-time", etc.)
+      position = position.split(',')[0].trim();
+      // Remove everything after dash/em-dash/en-dash (qualifiers like "- Backend", " - Remote")
+      position = position.split(/[-–—]/)[0].trim();
+      // Remove everything in parentheses (qualifiers like "(Remote)", "(Backend)", etc.)
+      position = position.replace(/\s*\([^)]*\)\s*/g, '').trim();
+      // Remove extra whitespace
+      position = position.replace(/\s+/g, ' ').trim();
+      
       return {
         company: company || "Company",
-        position: (jobInfo.position || "Position").trim()
+        position: position || "Position"
       };
     }
     // the formatted job info
