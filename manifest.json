@@ -1,6 +1,6 @@
 {
   "name": "ApplyPilot",
-  "description": "Making it easier to get a job.",
+  "description": "Automatically generate tailored cover letters for job applications using AI.",
   "version": "1.0",
   "manifest_version": 3,
   "permissions": ["activeTab", "scripting", "storage", "identity"],
