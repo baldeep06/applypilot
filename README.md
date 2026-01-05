@@ -4,7 +4,7 @@ ApplyPilot is a Chrome extension that streamlines the job application process by
 
 ---
 
-## ✨ Key Features
+## ✨ Product Features
 
 ### 🎯 AI Cover Letter Generation
 - Automatically generates personalized cover letters using Google Gemini AI  
