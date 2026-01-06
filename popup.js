@@ -54,8 +54,8 @@ templateCards.forEach(card => {
 
 // API URL configuration - uses production URL in deployed extension, localhost in development
 // Production URL should be set in config.js or via Chrome storage
-let API_URL = "https://applypilot-server-992595212896.us-central1.run.app"; // For prod
-//let API_URL = "http://localhost:3000";  // For testing locally
+//let API_URL = "https://applypilot-server-992595212896.us-central1.run.app"; // For prod
+let API_URL = "http://localhost:3000";  // For testing locally
 
 // updating server URL via chrome
 chrome.storage.sync.get(['apiUrl'], (result) => {
@@ -405,15 +405,100 @@ generateBtn.addEventListener("click", async () => {
     chrome.scripting.executeScript(
       {
         target: { tabId: tab.id },
-        func: () => document.body.innerText
+        func: async () => {
+          // Wait for dynamic content to load (modern job sites use JS frameworks)
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          // Try specific selectors in priority order
+          const selectors = [
+            'main article',
+            '.job-description',
+            '.job-details',
+            '.posting-description',
+            '.job-posting',
+            '.job-content',
+            '[data-automation-id="jobPostingDescription"]',
+            'article',
+            'main',
+            '[role="main"]'
+          ];
+
+          let bestText = '';
+          let maxLength = 0;
+
+          // Find longest substantial text from specific selectors
+          for (const selector of selectors) {
+            try {
+              const element = document.querySelector(selector);
+              if (element) {
+                const text = element.textContent?.trim();
+                if (text && text.length > maxLength) {
+                  bestText = text;
+                  maxLength = text.length;
+                }
+              }
+            } catch (e) {
+              // Continue if selector fails
+            }
+          }
+
+          // Try meta tags if nothing substantial found
+          if (!bestText || bestText.length < 300) {
+            try {
+              const meta = document.querySelector('meta[property="og:description"]') 
+                || document.querySelector('meta[name="description"]');
+              if (meta?.content && meta.content.length > maxLength) {
+                bestText = meta.content;
+                maxLength = meta.content.length;
+              }
+            } catch (e) {
+              // Continue if meta lookup fails
+            }
+          }
+
+          // Fallback: body without nav/footer/header/script/style
+          if (!bestText || bestText.length < 300) {
+            try {
+              const bodyClone = document.body.cloneNode(true);
+              bodyClone.querySelectorAll('nav, header, footer, aside, script, style, noscript').forEach(el => el.remove());
+              const bodyText = bodyClone.textContent?.trim() || '';
+              if (bodyText.length > maxLength) {
+                bestText = bodyText;
+                maxLength = bodyText.length;
+              }
+            } catch (e) {
+              // Continue if body cloning fails
+            }
+          }
+
+          // Final fallback: raw body text
+          if (!bestText || bestText.length < 300) {
+            try {
+              const bodyText = document.body.textContent || document.body.innerText || '';
+              if (bodyText.length > maxLength) {
+                bestText = bodyText;
+              }
+            } catch (e) {
+              bestText = '';
+            }
+          }
+
+          // Clean whitespace and normalize
+          return bestText ? bestText.replace(/\s+/g, ' ').trim() : '';
+        }
       },
       async (results) => {
-        const jobText = results?.[0]?.result.slice(0, 4000);
-        if (!jobText) {
-          setStatus("❌ Could not extract job text.", "error");
+        const extractedText = results?.[0]?.result;
+        
+        // VALIDATION: Check if content is substantial (300+ characters)
+        if (!extractedText || extractedText.length < 300) {
+          setStatus("❌ Could not find job description. Please wait for page to fully load and try again.", "error");
           setButtonLoading(false);
           return;
         }
+
+        // Trim to 4000 chars (keep existing behavior)
+        const jobText = extractedText.slice(0, 4000);
 
         const templateType = selectedTemplate || "default";
 
