@@ -84,6 +84,26 @@ Output the cover letter with this EXACT spacing pattern (where each line of text
 [Phone from resume]
 [Email from resume]
 
+CRITICAL - NAME EXTRACTION VALIDATION:
+⚠️ When extracting "[Full name from resume]":
+✅ Extract ONLY the person's actual full name (first name + last name, optionally middle name)
+✅ The name should be 2-4 words maximum (e.g., "John Smith", "Mary Jane Watson", "Aadit Shah")
+✅ Verify the extracted name makes sense - it should NOT include:
+  ❌ Job titles (e.g., "Software Engineer", "Intern", "Developer")
+  ❌ Company names
+  ❌ Role descriptions (e.g., "Co-Op", "Internship")
+  ❌ Any other resume content beyond the actual name
+✅ After extraction, validate: Does this look like a person's name, or did other text get accidentally included?
+✅ If the name looks malformed (contains role titles, company names, or other text), re-extract using ONLY the name portion
+✅ Apply role title simplification rules when generating filenames, but the signature name should be ONLY the actual name
+
+VALIDATION CHECKPOINT:
+Before using the name in the signature or filename:
+□ Does it contain ONLY the person's name (2-4 words)?
+□ Does it exclude job titles, company names, and role descriptions?
+□ Does it make sense as a real person's name?
+□ If generating a filename like "[Name] - [Company] [Position]", ensure the name portion is clean and simplified role titles are applied separately
+
 Dear [Hiring manager name OR "Hiring Manager"],
 
 [OPENING PARAGRAPH - STANDARD FORMAT WITH PUNCHY SECOND SENTENCE]
@@ -148,19 +168,49 @@ CRITICAL STATISTICS RULE:
 - Only include a statistic if it's DIRECTLY relevant to what the job posting asks for
 - If no statistic is highly relevant, DON'T include any - just describe the work
 
+CRITICAL - PARAGRAPH FLOW AND STORYTELLING:
+⚠️ This paragraph must read as a COHESIVE STORY about your experience, NOT a disconnected list of accomplishments.
+
+FORBIDDEN TRANSITION PATTERNS:
+❌ "For example," followed by "My work also involved," followed by "I also" (creates list effect)
+❌ Starting consecutive sentences with "I" + verb (e.g., "I developed... I also... I worked...")
+❌ Creating separate sentences that each state an independent accomplishment without connecting them
+❌ Listing technologies/experiences in sequence without showing how they relate
+
+REQUIRED - SMOOTH STORYTELLING APPROACH:
+✅ Write as ONE cohesive narrative telling a brief story about your experience
+✅ Each sentence should NATURALLY build on or connect to the previous sentence
+✅ Use conversational connectors: "and," "which," "while" to create smooth flow (be economical in short format)
+✅ Show relationships between your work (e.g., "The work involved..." connects to previous work)
+✅ Sentences should feel like they're telling ONE continuous story, not listing separate items
+✅ READ IT ALOUD TEST: Does it sound like one cohesive thought exploring your experience, or a list of separate accomplishments?
+
 Instructions:
 - Identify the 1-2 MOST important technologies that appear in BOTH the job posting AND resume
 - Include MAXIMUM ONE metric, and only if it directly relates to job requirements
 - DO NOT restate resume bullet points - completely rephrase into natural storytelling
-- Tell a brief story about your experience - don't list accomplishments
-- Let each sentence flow naturally into the next
-- Use "and," "while," "which" to connect ideas smoothly (but be economical)
-- Be direct and concise - no filler
+- Tell a COHESIVE brief story about your experience - don't list accomplishments
+- Ensure each sentence flows naturally into the next using connectors like "and," "which," "while"
+- Be direct and concise - no filler, but maintain smooth flow
 - Keep under 75 words
 
-Good Example: "I've spent my internships working with Python and PostgreSQL to build backend services. At BTNX, I designed database architecture and wrote APIs that connected to the frontend. The work involved collaborating with the data science team to integrate their models. This backend experience, especially with databases and APIs, seems like exactly what you need."
+Good Example (cohesive storytelling): 
+"I've spent my internships working with Python and PostgreSQL to build backend services. At BTNX, I designed database architecture and wrote APIs that connected to the frontend, which involved collaborating with the data science team to integrate their models. This backend experience, especially with databases and APIs, seems like exactly what you need."
 
-Bad Example: "I have experience with Python, SQL, and Redis. At BTNX, I developed microservices and built ten API endpoints, which eliminated 300 hours of manual work. I also reduced page load times by 20%." [Lists multiple stats, restates resume]
+Why this is GOOD:
+- Each sentence builds on the previous one using "and," "which"
+- Creates a cohesive narrative: technologies → specific project → technical details → collaboration → connection to role
+- Reads as one continuous story, not a list
+- Smooth transitions connect ideas naturally
+
+Bad Example (choppy, list-like flow):
+"I have experience with Python, SQL, and Redis. At BTNX, I developed microservices and built ten API endpoints, which eliminated 300 hours of manual work. I also reduced page load times by 20%." 
+
+Why this is BAD:
+- "I also" creates a list effect
+- Each sentence feels independent, not building on previous one
+- Sounds like bullet points converted to sentences
+- No smooth flow between ideas
 
 [PARAGRAPH 2 - EXACTLY 60-75 WORDS - COUNT YOUR WORDS]
 FOCUS: Pick ONE specific thing about the company and explore it (NOT a list of things, NOT mission statements)
@@ -176,6 +226,22 @@ ABSOLUTE PROHIBITIONS FOR THIS PARAGRAPH:
 ❌ NEVER write generic statements that could apply to any company in the same industry
 ❌ NEVER list multiple interests (e.g., "I'm interested in X, Y, and Z")
 
+CRITICAL - PARAGRAPH FLOW AND STORYTELLING:
+⚠️ This paragraph must read as a COHESIVE EXPLORATION of ONE idea, not disconnected statements.
+
+FORBIDDEN TRANSITION PATTERNS:
+❌ Starting multiple sentences with "I" + verb creating a list effect
+❌ Creating separate, independent sentences that don't connect
+❌ Jumping between different aspects without smooth transitions
+
+REQUIRED - SMOOTH STORYTELLING APPROACH:
+✅ Write as ONE cohesive exploration of a single idea
+✅ Each sentence should NATURALLY build on or connect to the previous sentence
+✅ Use conversational connectors: "and," "which," "since" to create flow (be economical in short format)
+✅ If exploring a product/challenge, start broad then narrow in, or start specific then expand the implications
+✅ Sentences should feel like they're exploring ONE continuous thought
+✅ READ IT ALOUD TEST: Does it sound like one cohesive exploration or separate statements about different things?
+
 REQUIRED SPECIFICITY:
 You MUST reference at least ONE of these:
 ✅ A specific product name (e.g., "crypto wallet," "trading platform," "Shopify Payments")
@@ -186,33 +252,48 @@ You MUST reference at least ONE of these:
 
 Instructions:
 - Choose ONE specific thing from the list above
-- Explain WHY that specific thing excites you technically (not vaguely)
+- Explain WHY that specific thing excites you technically (not vaguely) with smooth, connected sentences
 - Connect it to concrete interests or goals (not "learning opportunities")
 - Keep sentences SHORT - no run-ons
+- Ensure each sentence flows naturally from the previous one
 - Keep under 75 words
-- Be direct and brief - no fluff
+- Be direct and brief - no fluff, but maintain smooth flow
 
-GOOD Examples (note the specificity):
+GOOD Examples (note the specificity AND smooth flow):
 
-Example 1 - Specific product:
-"I've been following Robinhood's crypto wallet launch. The engineering challenges around transaction speed and security for crypto assets are fascinating. Building systems where mistakes directly affect user funds would push me to write much more careful code."
+Example 1 - Specific product (cohesive exploration):
+"I've been following Robinhood's crypto wallet launch and the engineering challenges around transaction speed and security. Building systems where mistakes directly affect user funds would push me to write much more careful code, which is exactly the kind of high-stakes engineering I want to learn."
 
-Example 2 - Specific technical challenge:
-"The job posting mentioned handling high-frequency trading data. I'm really interested in this kind of performance-critical work where microseconds matter. My database optimization experience would be directly applicable to these latency requirements."
+Why this is GOOD:
+- Smooth transitions: "and" connects product to challenges, "which" connects implications to goals
+- One cohesive exploration of the crypto wallet engineering challenges
+- Reads as one continuous thought
 
-Example 3 - Specific blog/news:
-"I read Robinhood's engineering blog post on their order matching engine optimization. The approach to reducing latency while maintaining accuracy was impressive. This kind of performance-critical backend work is exactly what I want to tackle."
+Example 2 - Specific technical challenge (cohesive exploration):
+"The job posting mentioned handling high-frequency trading data, which requires performance-critical work where microseconds matter. My database optimization experience would be directly applicable to these latency requirements, and this intersection of speed and precision is what draws me to the role."
 
-BAD Examples (generic, no value):
+Why this is GOOD:
+- "which" connects the challenge to requirements
+- "and" connects experience to personal interest
+- One cohesive narrative exploring the technical challenge
 
-Bad Example 1:
-"Robinhood's mission to democratize finance deeply resonates with my Computer Science and Finance background. I am particularly interested in how your backend systems handle the complexities of financial markets at scale. Learning more about the US financial system from the inside is a unique opportunity." [Mission statement recitation, vague interests, no specifics]
+Example 3 - Specific blog/news (cohesive exploration):
+"I read Robinhood's engineering blog post on their order matching engine optimization. The approach to reducing latency while maintaining accuracy was impressive, and this kind of performance-critical backend work is exactly what I want to tackle."
 
-Bad Example 2:
-"I'm excited about the opportunity to work on meaningful products that impact millions of users. Building scalable systems and learning from experienced engineers would help me grow. Your commitment to innovation aligns with my goals." [Could be any company, zero specifics]
+Why this is GOOD:
+- Smooth flow: blog post → approach → connection to goals
+- One cohesive exploration, not separate statements
 
-Bad Example 3:
-"What draws me to Stripe is the chance to work on financial infrastructure and payment systems. I want to understand how modern fintech works at scale. This would be a great learning experience for my career." [Vague, no specific products/tech mentioned]
+BAD Examples (generic, no value, OR choppy flow):
+
+Bad Example 1 (mission statement + vague):
+"Robinhood's mission to democratize finance deeply resonates with my Computer Science and Finance background. I am particularly interested in how your backend systems handle the complexities of financial markets at scale. Learning more about the US financial system from the inside is a unique opportunity." [Mission statement recitation, vague interests, no specifics, sentences don't flow smoothly]
+
+Bad Example 2 (generic + choppy):
+"I'm excited about working on meaningful products. Building scalable systems would help me grow. Your commitment to innovation aligns with my goals." [Could be any company, zero specifics, choppy disconnected statements]
+
+Bad Example 3 (vague + list-like):
+"What draws me to Stripe is financial infrastructure. I want to understand payment systems. This would be a great learning experience." [Vague, no specific products/tech mentioned, reads like a list]
 
 [CLOSING PARAGRAPH - CRITICAL FORMAT]
 MANDATORY FORMAT: "I am confident that my [skill 1], [skill 2], and strong work ethic would make me a valuable asset to [company]. Thank you for considering my application."
@@ -295,5 +376,6 @@ Before outputting, COUNT and verify:
 □ No consecutive sentences start the same way
 □ No formal transitions like "Additionally," "Furthermore," "Moreover"
 □ Sentences flow smoothly into each other - no choppy, disconnected statements
+□ Paragraphs 1 and 2 tell cohesive stories, not lists - each sentence builds naturally on the previous one
 □ Varies between shorter and longer sentences naturally
 □ No generic company praise - only specific references to products/tech/developments

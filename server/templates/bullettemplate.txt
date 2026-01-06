@@ -34,6 +34,26 @@ Resume (FOR REFERENCE):
 [Phone from resume]
 [Email from resume]
 
+CRITICAL - NAME EXTRACTION VALIDATION:
+⚠️ When extracting "[Full name from resume]":
+✅ Extract ONLY the person's actual full name (first name + last name, optionally middle name)
+✅ The name should be 2-4 words maximum (e.g., "John Smith", "Mary Jane Watson", "Aadit Shah")
+✅ Verify the extracted name makes sense - it should NOT include:
+  ❌ Job titles (e.g., "Software Engineer", "Intern", "Developer")
+  ❌ Company names
+  ❌ Role descriptions (e.g., "Co-Op", "Internship")
+  ❌ Any other resume content beyond the actual name
+✅ After extraction, validate: Does this look like a person's name, or did other text get accidentally included?
+✅ If the name looks malformed (contains role titles, company names, or other text), re-extract using ONLY the name portion
+✅ Apply role title simplification rules when generating filenames, but the signature name should be ONLY the actual name
+
+VALIDATION CHECKPOINT:
+Before using the name in the signature or filename:
+□ Does it contain ONLY the person's name (2-4 words)?
+□ Does it exclude job titles, company names, and role descriptions?
+□ Does it make sense as a real person's name?
+□ If generating a filename like "[Name] - [Company] [Position]", ensure the name portion is clean and simplified role titles are applied separately
+
 Dear [Hiring manager name OR "Hiring Manager"],
 
 I am excited about the opportunity to join the innovative team at [company name] as a [simplified position name]. [GENERATE_SENTENCE]
@@ -94,6 +114,20 @@ Write a 55-60 word paragraph that:
 - Paraphrases and aligns with personal goals
 - 2-3 sentences maximum
 - Does NOT describe company history
+
+CRITICAL - PARAGRAPH FLOW:
+⚠️ This paragraph must read as a COHESIVE exploration, not disconnected statements.
+
+REQUIRED - SMOOTH STORYTELLING APPROACH:
+✅ Each sentence should NATURALLY build on or connect to the previous sentence
+✅ Use conversational connectors: "and," "which," "since" to create smooth flow
+✅ Sentences should feel like they're exploring ONE continuous thought
+✅ READ IT ALOUD TEST: Does it sound like one cohesive exploration or separate statements?
+
+FORBIDDEN:
+❌ Starting multiple sentences with "I" + verb creating a list effect
+❌ Creating separate, independent sentences that don't connect
+❌ Choppy transitions that make it sound like a list
 
 ===== SPACING - SINGLE BLANK LINES ONLY =====
 Use EXACTLY ONE blank line between sections:

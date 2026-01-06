@@ -94,7 +94,14 @@ async function extractCandidateName(resumeText) {
     }
     
     // if unable, use gemini llm to extract
-    const prompt = `Extract the candidate's full name from this resume text. Return ONLY the name, nothing else. If you can't find it, return "Candidate".
+    const prompt = `Extract the candidate's full name from this resume text. Return ONLY the person's actual name (first name + last name, optionally middle name), nothing else.
+
+CRITICAL RULES:
+- Return ONLY the name (2-4 words maximum, typically first and last name)
+- DO NOT include job titles, company names, role descriptions, or any other text
+- The name should look like a real person's name (e.g., "John Smith", "Mary Jane Watson", "Aadit Shah")
+- If you can't find a clear name, return "Candidate"
+- Validate: Does the extracted text contain ONLY a person's name with no additional information?
 
 Resume text:
 ${resumeText.substring(0, 1000)}
