@@ -9,7 +9,7 @@ ApplyPilot is a Chrome extension that streamlines the job application process by
 ### 🎯 AI Cover Letter Generation
 - Automatically generates personalized cover letters using Google Gemini AI  
 - Matches your resume to the job description on the current webpage  
-- Produces natural, professional, application-ready writing  
+- Produces natural, professional, and truthful application-ready writing  
 
 ### 📝 Multiple Templates
 Choose the format that best fits the application:
