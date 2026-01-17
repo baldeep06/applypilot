@@ -157,6 +157,28 @@ Bad Example 3:
 [PARAGRAPH 2 - EXACTLY 90-105 WORDS - COUNT YOUR WORDS]
 FOCUS: 2-3 key technologies that match job posting + MAXIMUM ONE highly relevant metric + collaboration naturally woven in
 
+CRITICAL - MANDATORY SKILL MATCHING:
+⚠️ YOU MUST explicitly mention technologies, skills, or tools that appear in BOTH the job posting AND the resume.
+
+MANDATORY PROCESS:
+1. FIRST, identify ALL technologies/skills/tools explicitly mentioned in the job posting's "Required Skills", "Required Qualifications", "Technical Requirements", or similar sections
+   - Extract the 3-4 most important/key technologies/skills from the job posting
+   - Focus on technologies/tools that are central to the role, not minor mentions
+   
+2. SECOND, check which of those same technologies/skills appear in the resume
+   - Search in: Skills section, Experience section descriptions, Projects section, Coursework section
+   - Consider variations (e.g., if job says "Postgres" and resume says "PostgreSQL", these match)
+   - Consider related terms (e.g., if job says "data structures" and resume mentions it in coursework, these match)
+
+3. THIRD, you MUST mention at least 2-3 of these matching technologies in paragraph 2
+   - Prioritize the most important/commonly mentioned ones from the job posting
+   - Use the exact terminology from the job posting when possible
+   - If variants exist (e.g., "Postgres" vs "PostgreSQL"), use the version that appears in the resume
+
+4. DO NOT skip mentioning a technology just because it's "obvious" or "common"
+   - If it's explicitly listed as a requirement in the job posting AND appears in the resume, it MUST be mentioned
+   - This shows alignment between your experience and their needs
+
 CRITICAL STATISTICS RULE:
 - Use MAXIMUM ONE statistic in this entire paragraph
 - Only include a statistic if it's DIRECTLY relevant to what the job posting asks for
@@ -185,7 +207,10 @@ REQUIRED - SMOOTH STORYTELLING APPROACH:
 ✅ READ IT ALOUD TEST: Does it sound like one cohesive thought exploring your experience, or a list of separate accomplishments?
 
 Instructions:
-- Identify the 2-3 MOST important technologies that appear in BOTH the job posting AND resume
+- STEP 1: List all technologies explicitly mentioned in the job posting's requirements
+- STEP 2: Check which ones appear in the resume (Skills, Experience, Projects, Coursework)
+- STEP 3: You MUST mention at least 2-3 of these matching technologies in your paragraph
+- STEP 4: Weave them naturally into a cohesive story about your experience
 - Include MAXIMUM ONE metric, and only if it directly relates to job requirements
 - DO NOT restate resume bullet points - completely rephrase into natural storytelling
 - Naturally mention cross-team collaboration, presenting work, or explaining technical concepts
@@ -195,17 +220,35 @@ Instructions:
 - Vary sentence length naturally
 - Keep under 105 words
 
-Good Example (cohesive storytelling): 
-"I've spent most of my internships working with Python and PostgreSQL to build backend services. At BTNX, I designed the database architecture for an automation system and wrote the API layer that connected it to the frontend, which required optimizing queries to handle high traffic. This work involved collaborating with the data science team to integrate their ML models, and I spent time explaining the system architecture to stakeholders who needed to understand how everything fit together. This kind of backend work, especially the database and API design, seems like exactly what you need."
+VALIDATION BEFORE OUTPUT:
+□ Have you identified the 3-4 key technologies/skills from the job posting's requirements section?
+□ Have you checked which of those appear in the resume (Skills, Experience, Projects, Coursework)?
+□ Are at least 2-3 of these matching technologies mentioned in paragraph 2?
+□ If a technology is explicitly listed in the job posting AND appears in the resume, is it mentioned?
+□ Are the technologies woven naturally into a cohesive story, not just listed?
+
+Good Example (cohesive storytelling with matching skills): 
+[The example would mention specific technologies that appear in both the job posting and resume, woven naturally into the story. The technologies mentioned would vary based on what's actually in the job posting and resume.]
 
 Why this is GOOD:
 - Each sentence builds on the previous one using "and," "which," "This work"
 - Creates a cohesive narrative: technologies → specific project → technical details → collaboration → connection to role
 - Reads as one continuous story, not a list
 - Smooth transitions connect ideas naturally
+- MENTIONS matching skills that appear in both job posting and resume (the specific technologies would vary)
+- NATURALLY weaves in matching skills without making them sound forced
+
+ANOTHER Good Example (matching multiple required skills):
+[The example would mention multiple technologies that appear in both the job posting and resume, showing how they're used together.]
+
+Why this is ALSO GOOD:
+- Explicitly mentions matching technologies (the specific ones would vary based on job posting and resume)
+- Weaves them naturally into the story without just listing them
+- Shows HOW these skills were used together, not just that they exist
+- Creates a cohesive narrative connecting technologies to experience
 
 Bad Example (choppy, list-like flow):
-"I've spent a lot of time working with Python, SQL, and Redis. At BTNX, I developed an automation microservice in C# and built over ten API endpoints, which eliminated 300 hours of manual work per year. My work also involved using Redis to introduce caching and cut page load times by 20%. I also spent time collaborating with teams." 
+[The example would show technologies listed without connection, creating a choppy list effect with transitions like "My work also involved" and "I also" that make it sound like separate bullet points rather than a cohesive story.] 
 
 Why this is BAD:
 - "My work also involved" and "I also" create a list effect
@@ -214,7 +257,7 @@ Why this is BAD:
 - No smooth flow between ideas
 
 Bad Example (disconnected statements):
-"I've worked with Python and PostgreSQL. For example, I developed an automation microservice. My work also involved designing databases. I also improved performance. This experience matches your needs."
+[The example would show technologies listed without connection, creating a choppy list effect rather than a cohesive story.]
 
 Why this is BAD:
 - "For example," "My work also involved," "I also" create choppy transitions
@@ -311,7 +354,7 @@ Good Examples:
 "I am confident that my technical skills, ability to work across teams, and strong work ethic would make me a valuable asset to Shopify. I am eager to contribute my skills and learn from the talented professionals at your company. Thank you for considering my application."
 
 Bad Examples:
-"I am confident that my Python and PostgreSQL skills would make me a valuable asset to Robinhood." [Too specific, no soft skills, missing "strong work ethic"]
+"I am confident that my [specific technology] and [specific technology] skills would make me a valuable asset to [company]." [Too specific, no soft skills, missing "strong work ethic"]
 
 "I am confident that my coding abilities and debugging skills would make me a valuable asset to Google." [Only technical, missing "strong work ethic"]
 Sincerely,

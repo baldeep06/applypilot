@@ -73,17 +73,47 @@ Sincerely,
 Generate ONE sentence that:
 - Starts with "I am eager to leverage"
 - Highlights 2-3 specific technical skills from job description that match resume
+
+CRITICAL - MANDATORY SKILL MATCHING:
+⚠️ YOU MUST identify technologies/skills that appear in BOTH the job posting AND the resume.
+
+MANDATORY PROCESS:
+1. FIRST, identify ALL technologies explicitly mentioned in the job posting's "Required Skills", "Required Qualifications", "Technical Requirements", or similar sections
+   - Extract the 3-4 most important/key technologies from the job posting
+   - Focus on technologies that are central to the role
+   
+2. SECOND, check which of those same technologies appear in the resume (Skills, Experience, Projects, Coursework)
+   - Consider variations (e.g., if job says "Postgres" and resume says "PostgreSQL", these match)
+   - Consider related terms and synonyms
+
+3. THIRD, you MUST mention at least 2-3 of these matching technologies in the opening sentence
+   - Prioritize the most important/commonly mentioned ones from the job posting
+   - Use the exact terminology from the job posting when possible
+   - If variants exist, use the version that appears in the resume
+
 - Does NOT copy exact phrases from job description
 - Does NOT use placeholders like "[Programming Language]"
 - Keeps it under 25 words
 
-Example: "I am eager to leverage my experience with React, Python, and cloud infrastructure to contribute to your mission."
+Example: "I am eager to leverage my experience with [technology 1], [technology 2], and [technology 3] to contribute to your mission."
+(Note: Replace [technology 1], [technology 2], [technology 3] with actual technologies that appear in BOTH the job posting requirements AND the resume)
 
 ===== BULLET_POINTS INSTRUCTIONS =====
 Extract THREE relevant experiences/projects from the resume that align with job description.
 
 ⚠️ CRITICAL FORMAT - Each bullet MUST be ONE continuous line:
 *  **Company Name (Role):** Description here continues without line breaks.
+
+CRITICAL - MANDATORY SKILL MATCHING IN BULLETS:
+⚠️ YOU MUST mention technologies/skills that appear in BOTH the job posting AND the resume within the bullet descriptions.
+
+MANDATORY PROCESS:
+1. Identify the 3-4 key technologies explicitly required in the job posting's requirements section
+2. Check which ones appear in the resume experience/projects being described in each bullet
+3. Naturally weave at least 1-2 matching technologies into EACH bullet point
+   - If a technology is required in the job posting AND mentioned in the resume experience/project for that bullet, mention it
+   - If a technology is required in the job posting AND mentioned in resume coursework/other sections, reference it naturally
+   - Prioritize technologies that are directly relevant to each specific bullet's experience
 
 Requirements:
 - Start with asterisk and two spaces: "*  "
@@ -93,14 +123,15 @@ Requirements:
 - Each bullet: MAX 50 words
 - Focus on experiences matching job requirements
 - Use technologies from BOTH resume AND job description
+- Each bullet should naturally mention at least 1-2 technologies that match between job posting and resume
 - DO NOT copy resume text word-for-word - rephrase naturally
 - DO NOT include statistics or metrics (no percentages, no numbers)
 - Last bullet should be "Technical Projects:" (no specific project name in parentheses)
 
 Example of CORRECT formatting (each is ONE line):
-*  **BTNX (Software Engineering Intern):** I built full-stack web applications with React and .NET, working extensively with SQL databases and backend APIs. I developed automation tools and worked on machine learning models for product diagnostics.
-*  **Government of Ontario (Software Developer Intern):** I created responsive web components and RESTful APIs using C# and .NET. I optimized database queries and improved system performance across high-traffic applications.
-*  **Technical Projects:** I developed machine learning models and data pipelines using Python, scikit-learn, and Flask. These projects showcase my ability to apply AI techniques to solve real-world problems.
+*  **[Company Name (Role):]** [Description mentioning technologies that appear in both job posting and resume, woven naturally into the experience narrative.]
+*  **[Company Name (Role):]** [Description mentioning technologies that appear in both job posting and resume, woven naturally into the experience narrative.]
+*  **Technical Projects:** [Description mentioning technologies that appear in both job posting and resume, woven naturally into the project narrative.]
 
 WRONG (bullet character on separate line - DO NOT DO THIS):
 *
@@ -150,15 +181,16 @@ aadit.shah@uwaterloo.ca
 
 Dear Hiring Manager,
 
-I am excited about the opportunity to join the innovative team at Capital One as a Software Engineer Intern. I am eager to leverage my experience with Java, Python, and AWS to contribute to your mission.
+I am excited about the opportunity to join the innovative team at [Company Name] as a [Role Title]. I am eager to leverage my experience with [technology 1], [technology 2], and [technology 3] to contribute to your mission.
+[Note: [technology 1], [technology 2], [technology 3] should be replaced with actual technologies that appear in BOTH the job posting requirements AND the resume]
 
 I've also developed invaluable practical skills through diverse work and project experience.
 
-*  **BTNX (Software Engineering Intern):** I built full-stack web applications with React and .NET, working with SQL databases and backend APIs. I developed automation tools and machine learning models for diagnostics.
-*  **Government of Ontario (Software Developer Intern):** I created responsive web components and RESTful APIs using C# and .NET. I optimized database performance across high-traffic public applications.
-*  **Technical Projects:** I developed machine learning pipelines and data analysis tools using Python and Flask. These projects demonstrate my ability to apply technical skills to complex challenges.
+*  **[Company Name (Role):]** [Description mentioning technologies that appear in both job posting and resume, woven naturally into the experience.]
+*  **[Company Name (Role):]** [Description mentioning technologies that appear in both job posting and resume, woven naturally into the experience.]
+*  **Technical Projects:** [Description mentioning technologies that appear in both job posting and resume, woven naturally into the project narrative.]
 
-I am drawn by Capital One's mission to innovate banking and make credit more accessible. The emphasis on teamwork and continuous learning resonates with my values, and I'm eager to contribute to a collaborative environment.
+[I am drawn by paragraph would be customized based on job posting specifics]
 
 Enclosed, please find my resume. Thank you for considering my application.
 

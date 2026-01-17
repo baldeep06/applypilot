@@ -163,6 +163,27 @@ Bad Examples:
 [PARAGRAPH 1 - EXACTLY 60-75 WORDS - COUNT YOUR WORDS]
 FOCUS: 1-2 key technologies that match job posting + MAXIMUM ONE highly relevant metric
 
+CRITICAL - MANDATORY SKILL MATCHING:
+⚠️ YOU MUST explicitly mention technologies/skills that appear in BOTH the job posting AND the resume.
+
+MANDATORY PROCESS:
+1. FIRST, identify ALL technologies explicitly mentioned in the job posting's "Required Skills", "Required Qualifications", "Technical Requirements", or similar sections
+   - Extract the 3-4 most important/key technologies from the job posting
+   - Focus on technologies that are central to the role, not minor mentions
+   
+2. SECOND, check which of those same technologies appear in the resume (Skills, Experience, Projects, Coursework)
+   - Consider variations (e.g., if job says "Postgres" and resume says "PostgreSQL", these match)
+   - Consider related terms and synonyms
+
+3. THIRD, you MUST mention at least 1-2 of these matching technologies in paragraph 1
+   - Prioritize the most important/commonly mentioned ones from the job posting
+   - Use the exact terminology from the job posting when possible
+   - If variants exist, use the version that appears in the resume
+
+4. DO NOT skip mentioning a technology just because it's "obvious" or "common"
+   - If it's explicitly listed as a requirement in the job posting AND appears in the resume, it MUST be mentioned
+   - This shows alignment between your experience and their needs
+
 CRITICAL STATISTICS RULE:
 - Use MAXIMUM ONE statistic in this entire paragraph
 - Only include a statistic if it's DIRECTLY relevant to what the job posting asks for
@@ -186,7 +207,10 @@ REQUIRED - SMOOTH STORYTELLING APPROACH:
 ✅ READ IT ALOUD TEST: Does it sound like one cohesive thought exploring your experience, or a list of separate accomplishments?
 
 Instructions:
-- Identify the 1-2 MOST important technologies that appear in BOTH the job posting AND resume
+- STEP 1: List all technologies explicitly mentioned in the job posting's requirements
+- STEP 2: Check which ones appear in the resume (Skills, Experience, Projects, Coursework)
+- STEP 3: You MUST mention at least 1-2 of these matching technologies in your paragraph
+- STEP 4: Weave them naturally into a cohesive story about your experience
 - Include MAXIMUM ONE metric, and only if it directly relates to job requirements
 - DO NOT restate resume bullet points - completely rephrase into natural storytelling
 - Tell a COHESIVE brief story about your experience - don't list accomplishments
@@ -194,17 +218,26 @@ Instructions:
 - Be direct and concise - no filler, but maintain smooth flow
 - Keep under 75 words
 
-Good Example (cohesive storytelling): 
-"I've spent my internships working with Python and PostgreSQL to build backend services. At BTNX, I designed database architecture and wrote APIs that connected to the frontend, which involved collaborating with the data science team to integrate their models. This backend experience, especially with databases and APIs, seems like exactly what you need."
+VALIDATION BEFORE OUTPUT:
+□ Have you identified the 3-4 key technologies/skills from the job posting's requirements section?
+□ Have you checked which of those appear in the resume (Skills, Experience, Projects, Coursework)?
+□ Are at least 1-2 of these matching technologies mentioned in paragraph 1?
+□ If a technology is explicitly listed in the job posting AND appears in the resume, is it mentioned?
+□ Are the technologies woven naturally into a cohesive story, not just listed?
+
+Good Example (cohesive storytelling with matching skills): 
+[The example would mention specific technologies that appear in both the job posting and resume, woven naturally into the story. The technologies mentioned would vary based on what's actually in the job posting and resume.]
 
 Why this is GOOD:
 - Each sentence builds on the previous one using "and," "which"
 - Creates a cohesive narrative: technologies → specific project → technical details → collaboration → connection to role
 - Reads as one continuous story, not a list
 - Smooth transitions connect ideas naturally
+- MENTIONS matching skills that appear in both job posting and resume (the specific technologies would vary)
+- NATURALLY weaves in matching skills without making them sound forced
 
 Bad Example (choppy, list-like flow):
-"I have experience with Python, SQL, and Redis. At BTNX, I developed microservices and built ten API endpoints, which eliminated 300 hours of manual work. I also reduced page load times by 20%." 
+[The example would show technologies listed without connection, creating a choppy list effect with transitions like "I also" that make each sentence feel independent rather than building on the previous one.] 
 
 Why this is BAD:
 - "I also" creates a list effect
@@ -320,7 +353,7 @@ Good Examples:
 "I am confident that my technical skills, ability to work across teams, and strong work ethic would make me a valuable asset to Shopify."
 
 Bad Examples:
-"I am confident that my Python and PostgreSQL skills would make me a valuable asset to Robinhood." [Too specific, no soft skills, missing "strong work ethic"]
+"I am confident that my [specific technology] and [specific technology] skills would make me a valuable asset to [company]." [Too specific, no soft skills, missing "strong work ethic"]
 
 "I am confident that my coding abilities and debugging skills would make me a valuable asset to Google." [Only technical, missing "strong work ethic"]
 
@@ -363,7 +396,7 @@ Before outputting, COUNT and verify:
 □ Paragraph 2 does NOT mention mission statements or use vague phrases like "complexities of" or "at scale"
 □ Paragraph 2 has SHORT sentences - no sentence has 3+ commas or 25+ words
 □ Paragraph 2 ADDS VALUE - demonstrates real research, not generic interest
-□ Closing lists 2 soft/transferable skills (NOT specific tech like "Python and PostgreSQL")
+□ Closing lists 2 soft/transferable skills (NOT specific technologies from the job posting)
 □ Closing ALWAYS includes "strong work ethic" as the final skill
 □ Total is 150-200 words
 □ Role title simplified appropriately (full first time, shortened after)
