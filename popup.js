@@ -409,40 +409,247 @@ generateBtn.addEventListener("click", async () => {
           // Wait for dynamic content to load (modern job sites use JS frameworks)
           await new Promise(resolve => setTimeout(resolve, 1500));
           
-          // Try specific selectors in priority order
-          const selectors = [
-            'main article',
-            '.job-description',
-            '.job-details',
-            '.posting-description',
-            '.job-posting',
-            '.job-content',
-            '[data-automation-id="jobPostingDescription"]',
-            'article',
-            'main',
-            '[role="main"]'
-          ];
-
+          // Function to check if element is visible and likely a modal/overlay
+          function isModalLike(element) {
+            if (!element) return false;
+            const style = window.getComputedStyle(element);
+            const rect = element.getBoundingClientRect();
+            
+            // Check if element is visible
+            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+              return false;
+            }
+            
+            // Check if element is within viewport and has reasonable size
+            const elementHeight = rect.height;
+            const elementWidth = rect.width;
+            
+            // Must be reasonably sized (not too small)
+            if (elementHeight < 200 || elementWidth < 300) {
+              return false;
+            }
+            
+            // Check for ARIA dialog/modal roles (highest priority)
+            const role = element.getAttribute('role');
+            if (role === 'dialog' || role === 'alertdialog') {
+              return true;
+            }
+            
+            // Check if it has high z-index (common for modals)
+            const zIndex = parseInt(style.zIndex, 10);
+            if (zIndex >= 100 || style.position === 'fixed' || style.position === 'absolute') {
+              // Check if it appears to be in front of other content
+              // For fixed/absolute positioned elements with z-index >= 100, likely a modal
+              if (style.position === 'fixed' || (style.position === 'absolute' && zIndex >= 100)) {
+                return true;
+              }
+            }
+            
+            // Check for common modal class names or IDs
+            const className = element.className || '';
+            const id = element.id || '';
+            const modalKeywords = ['modal', 'dialog', 'overlay', 'popup', 'popover', 'lightbox', 'drawer', 'panel'];
+            const classOrId = (className + ' ' + id).toLowerCase();
+            
+            for (const keyword of modalKeywords) {
+              if (classOrId.includes(keyword)) {
+                return true;
+              }
+            }
+            
+            return false;
+          }
+          
+          // Function to find modal/overlay/dialog elements
+          function findModalElements() {
+            const candidates = [];
+            
+            // Check for common modal/dialog/overlay selectors
+            const modalSelectors = [
+              '[role="dialog"]',
+              '[role="alertdialog"]',
+              '.modal',
+              '.modal-dialog',
+              '.modal-content',
+              '.overlay',
+              '.dialog',
+              '.popup',
+              '.popover',
+              '[class*="modal"]',
+              '[class*="dialog"]',
+              '[class*="overlay"]',
+              '[id*="modal"]',
+              '[id*="dialog"]'
+            ];
+            
+            for (const selector of modalSelectors) {
+              try {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                  if (isModalLike(el)) {
+                    candidates.push(el);
+                  }
+                });
+              } catch (e) {
+                // Continue if selector fails
+              }
+            }
+            
+            // Also check for elements with high z-index or fixed positioning that might be modals
+            const allElements = document.querySelectorAll('*');
+            for (const el of allElements) {
+              if (candidates.includes(el)) continue;
+              
+              const style = window.getComputedStyle(el);
+              const zIndex = parseInt(style.zIndex, 10);
+              
+              // Check for fixed/absolute positioned elements with z-index or visible modal-like elements
+              if ((zIndex >= 100 && (style.position === 'fixed' || style.position === 'absolute')) || 
+                  isModalLike(el)) {
+                candidates.push(el);
+              }
+            }
+            
+            // Sort by z-index (highest first) and size (largest text content first)
+            candidates.sort((a, b) => {
+              const aStyle = window.getComputedStyle(a);
+              const bStyle = window.getComputedStyle(b);
+              const aZ = parseInt(aStyle.zIndex, 10) || 0;
+              const bZ = parseInt(bStyle.zIndex, 10) || 0;
+              if (aZ !== bZ) return bZ - aZ;
+              const aText = a.textContent?.length || 0;
+              const bText = b.textContent?.length || 0;
+              return bText - aText;
+            });
+            
+            return candidates;
+          }
+          
           let bestText = '';
           let maxLength = 0;
 
-          // Find longest substantial text from specific selectors
-          for (const selector of selectors) {
+          // PRIORITY 1: Try to find and extract from modal/overlay elements first
+          const modalElements = findModalElements();
+          let foundSubstantialModal = false;
+          
+          for (const modalEl of modalElements) {
             try {
-              const element = document.querySelector(selector);
-              if (element) {
-                const text = element.textContent?.trim();
-                if (text && text.length > maxLength) {
-                  bestText = text;
-                  maxLength = text.length;
+              // Function to scroll through element and collect all text
+              async function scrollAndCollectText(element) {
+                let allText = '';
+                const originalScrollTop = element.scrollTop || 0;
+                const originalScrollHeight = element.scrollHeight || 0;
+                
+                // Try to scroll through the element if it's scrollable
+                if (element.scrollTop !== undefined && originalScrollHeight > element.clientHeight) {
+                  // Scroll to top first
+                  element.scrollTop = 0;
+                  await new Promise(resolve => setTimeout(resolve, 200));
+                  allText = element.textContent?.trim() || '';
+                  
+                  // Scroll to middle
+                  element.scrollTop = originalScrollHeight / 2;
+                  await new Promise(resolve => setTimeout(resolve, 200));
+                  const middleText = element.textContent?.trim() || '';
+                  if (middleText.length > allText.length) {
+                    allText = middleText;
+                  }
+                  
+                  // Scroll to bottom
+                  element.scrollTop = originalScrollHeight;
+                  await new Promise(resolve => setTimeout(resolve, 200));
+                  const bottomText = element.textContent?.trim() || '';
+                  if (bottomText.length > allText.length) {
+                    allText = bottomText;
+                  }
+                  
+                  // Restore original scroll position
+                  element.scrollTop = originalScrollTop;
+                } else {
+                  // Not scrollable, just get current text
+                  allText = element.textContent?.trim() || '';
+                }
+                
+                return allText;
+              }
+              
+              // First, try scrolling through the main modal element
+              let text = await scrollAndCollectText(modalEl);
+              
+              // Also check nested scrollable children (common in modals with tabs/panels)
+              const scrollableChildren = modalEl.querySelectorAll('[style*="overflow"], .scrollable, [class*="scroll"], [style*="overflow-y"], [style*="overflow-x"]');
+              for (const scrollable of scrollableChildren) {
+                const childText = await scrollAndCollectText(scrollable);
+                // If child has more content, it might be the actual content area
+                if (childText.length > text.length && childText.length > 300) {
+                  text = childText;
                 }
               }
+              
+              // Check for elements with overflow scroll style
+              const allChildren = modalEl.querySelectorAll('*');
+              for (const child of allChildren) {
+                const style = window.getComputedStyle(child);
+                if (style.overflow === 'auto' || style.overflow === 'scroll' || 
+                    style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                  const childText = await scrollAndCollectText(child);
+                  if (childText.length > text.length && childText.length > 300) {
+                    text = childText;
+                  }
+                }
+              }
+              
+              if (text && text.length > maxLength && text.length > 300) {
+                bestText = text;
+                maxLength = text.length;
+                foundSubstantialModal = true;
+                // Found a substantial modal - stop here to avoid background content
+                break;
+              }
             } catch (e) {
-              // Continue if selector fails
+              // Continue if extraction fails
             }
           }
 
-          // Try meta tags if nothing substantial found
+          // PRIORITY 2: Try specific selectors (but ONLY if no substantial modal was found)
+          // This prevents selecting background job listings when a modal is present
+          if (!foundSubstantialModal) {
+            const selectors = [
+              'main article',
+              '.job-description',
+              '.job-details',
+              '.posting-description',
+              '.job-posting',
+              '.job-content',
+              '[data-automation-id="jobPostingDescription"]',
+              'article',
+              'main',
+              '[role="main"]'
+            ];
+
+            for (const selector of selectors) {
+              try {
+                const element = document.querySelector(selector);
+                if (element) {
+                  // Skip if this element is inside a modal we already checked
+                  const isInsideModal = modalElements.some(modal => modal.contains(element));
+                  if (isInsideModal && bestText.length > 300) {
+                    continue;
+                  }
+                  
+                  const text = element.textContent?.trim();
+                  if (text && text.length > maxLength) {
+                    bestText = text;
+                    maxLength = text.length;
+                  }
+                }
+              } catch (e) {
+                // Continue if selector fails
+              }
+            }
+          }
+
+          // PRIORITY 3: Try meta tags if nothing substantial found
           if (!bestText || bestText.length < 300) {
             try {
               const meta = document.querySelector('meta[property="og:description"]') 
@@ -456,23 +663,71 @@ generateBtn.addEventListener("click", async () => {
             }
           }
 
-          // Fallback: body without nav/footer/header/script/style
-          if (!bestText || bestText.length < 300) {
+          // PRIORITY 4: Fallback: body without nav/footer/header/script/style
+          // BUT ONLY if no substantial modal was found (to avoid background content)
+          if (!foundSubstantialModal && (!bestText || bestText.length < 300)) {
             try {
               const bodyClone = document.body.cloneNode(true);
+              
+              // Remove navigation and structural elements
               bodyClone.querySelectorAll('nav, header, footer, aside, script, style, noscript').forEach(el => el.remove());
-              const bodyText = bodyClone.textContent?.trim() || '';
-              if (bodyText.length > maxLength) {
-                bestText = bodyText;
-                maxLength = bodyText.length;
+              
+              // If we found modals (even if not substantial), try to exclude them from body extraction
+              // to avoid getting background job listings mixed with modal content
+              if (modalElements.length > 0) {
+                // Remove modal elements from the clone to avoid background content
+                modalElements.forEach(modal => {
+                  const modalClone = bodyClone.querySelector(`[data-original-id="${modal.id}"]`);
+                  if (!modalClone && modal.id) {
+                    // Try to find by ID
+                    const found = bodyClone.getElementById(modal.id);
+                    if (found) found.remove();
+                  }
+                });
+              }
+              
+              // Try to identify and keep only the most prominent content area
+              const allTextBlocks = [];
+              const walker = document.createTreeWalker(
+                bodyClone,
+                NodeFilter.SHOW_ELEMENT,
+                null,
+                false
+              );
+              
+              let node;
+              while (node = walker.nextNode()) {
+                const tagName = node.tagName.toLowerCase();
+                if (['div', 'section', 'article', 'main'].includes(tagName)) {
+                  const text = node.textContent?.trim();
+                  if (text && text.length > 500) {
+                    allTextBlocks.push({ element: node, length: text.length });
+                  }
+                }
+              }
+              
+              // Sort by length and keep the longest substantial block
+              allTextBlocks.sort((a, b) => b.length - a.length);
+              if (allTextBlocks.length > 0 && allTextBlocks[0].length > maxLength) {
+                bestText = allTextBlocks[0].element.textContent?.trim() || '';
+                maxLength = allTextBlocks[0].length;
+              }
+              
+              // If still nothing, use the cleaned body text
+              if (!bestText || bestText.length < 300) {
+                const bodyText = bodyClone.textContent?.trim() || '';
+                if (bodyText.length > maxLength) {
+                  bestText = bodyText;
+                  maxLength = bodyText.length;
+                }
               }
             } catch (e) {
               // Continue if body cloning fails
             }
           }
 
-          // Final fallback: raw body text
-          if (!bestText || bestText.length < 300) {
+          // PRIORITY 5: Final fallback: raw body text (ONLY if no modal found)
+          if (!foundSubstantialModal && (!bestText || bestText.length < 300)) {
             try {
               const bodyText = document.body.textContent || document.body.innerText || '';
               if (bodyText.length > maxLength) {

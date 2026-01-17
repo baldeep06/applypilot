@@ -79,7 +79,7 @@ const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
   generationConfig: {
     temperature: 0.7,
-    maxOutputTokens: 4096
+    maxOutputTokens: 8192  // Increased to handle longer responses and prevent truncation
   }
 });
 
@@ -785,20 +785,89 @@ app.post("/generate", verifyToken, async (req, res) => {
 
     console.log(`📝 Generating cover letter for ${req.userEmail}`);
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
+    // Function to extract full text from response, handling all possible response formats
+    function extractFullText(response) {
+      let text = "";
+      
+      try {
+        // Primary method: use response.text() which handles concatenation of all parts
+        text = response.text();
+      } catch (err) {
+        console.warn("Primary text extraction failed, trying alternative method:", err);
+        
+        // Alternative method: manually concatenate all parts
+        if (response.candidates && response.candidates.length > 0) {
+          const candidate = response.candidates[0];
+          if (candidate.content && candidate.content.parts) {
+            text = candidate.content.parts
+              .map(part => part.text || "")
+              .filter(text => text)
+              .join("");
+          }
+        }
+      }
+      
+      return text;
+    }
+
+    // Generate with retry logic if response appears incomplete
     let coverLetter = "";
+    let attempts = 0;
+    const maxAttempts = 2;
     
-    try {
-      coverLetter = response.text();
-    } catch (err) {
-      if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
-        coverLetter = response.candidates[0].content.parts[0].text;
+    while (attempts < maxAttempts) {
+      try {
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        coverLetter = extractFullText(response);
+
+        // Check if response appears complete
+        // A complete cover letter should end with "Sincerely," or signature
+        const isLikelyComplete = coverLetter && (
+          coverLetter.trim().endsWith("Sincerely,") ||
+          /Sincerely,\s*$/m.test(coverLetter.trim()) ||
+          coverLetter.includes("Thank you for considering my application") ||
+          coverLetter.length > 800  // If it's long enough, likely complete
+        );
+
+        // Check if response was cut off mid-sentence or mid-word
+        const isTruncated = coverLetter && (
+          !isLikelyComplete && 
+          coverLetter.length > 100 &&  // Has some content
+          (!coverLetter.trim().endsWith(".") && 
+           !coverLetter.trim().endsWith("!") && 
+           !coverLetter.trim().endsWith("?") &&
+           !coverLetter.trim().endsWith(",") &&
+           !coverLetter.trim().endsWith("Sincerely,"))
+        );
+
+        if (!isTruncated && coverLetter && coverLetter.trim().length > 0) {
+          break; // Response appears complete, exit retry loop
+        }
+
+        if (attempts < maxAttempts - 1) {
+          console.log(`⚠️ Response appears incomplete (${coverLetter.length} chars), retrying... (attempt ${attempts + 1}/${maxAttempts})`);
+          attempts++;
+          // Add a small delay before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      } catch (err) {
+        console.error("Error generating cover letter:", err);
+        if (attempts === maxAttempts - 1) {
+          throw err;
+        }
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
     if (!coverLetter || coverLetter.trim().length === 0) {
-      return res.status(500).json({ error: "No text returned from Gemini" });
+      return res.status(500).json({ error: "No text returned from Gemini after retries" });
+    }
+
+    // Log warning if response seems unusually short
+    if (coverLetter.length < 500) {
+      console.warn(`⚠️ Generated cover letter seems short (${coverLetter.length} chars). Expected ~1000-2000 chars.`);
     }
 
     // Extract info for file name
